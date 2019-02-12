@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // coord_desc
 void coord_desc(const arma::mat& x, arma::vec& resid, const arma::vec& w, const arma::vec& ptype, const arma::vec& cmult, const NumericVector& qnt, const NumericVector& lam_cur, const IntegerVector& stop, const NumericVector& ucl, const NumericVector& lcl, const int& ne, const int& nx, LogicalVector& strong, LogicalVector& active, const double& thr, const int& maxit, const arma::vec& xv, arma::vec& b, arma::vec& g, double& dev_cur, double& errcode, int& nlp, IntegerVector& nin);
-RcppExport SEXP _hierr_coord_desc(SEXP xSEXP, SEXP residSEXP, SEXP wSEXP, SEXP ptypeSEXP, SEXP cmultSEXP, SEXP qntSEXP, SEXP lam_curSEXP, SEXP stopSEXP, SEXP uclSEXP, SEXP lclSEXP, SEXP neSEXP, SEXP nxSEXP, SEXP strongSEXP, SEXP activeSEXP, SEXP thrSEXP, SEXP maxitSEXP, SEXP xvSEXP, SEXP bSEXP, SEXP gSEXP, SEXP dev_curSEXP, SEXP errcodeSEXP, SEXP nlpSEXP, SEXP ninSEXP) {
+RcppExport SEXP _xrnet_coord_desc(SEXP xSEXP, SEXP residSEXP, SEXP wSEXP, SEXP ptypeSEXP, SEXP cmultSEXP, SEXP qntSEXP, SEXP lam_curSEXP, SEXP stopSEXP, SEXP uclSEXP, SEXP lclSEXP, SEXP neSEXP, SEXP nxSEXP, SEXP strongSEXP, SEXP activeSEXP, SEXP thrSEXP, SEXP maxitSEXP, SEXP xvSEXP, SEXP bSEXP, SEXP gSEXP, SEXP dev_curSEXP, SEXP errcodeSEXP, SEXP nlpSEXP, SEXP ninSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
@@ -40,7 +40,7 @@ END_RCPP
 }
 // create_data
 arma::mat create_data(const int& nobs, const int& nvar, const int& nvar_ext, const int& nvar_unpen, const int& nvar_total, const arma::mat& x, const arma::mat& ext, const arma::mat& unpen, const arma::vec& w, const bool& isd, const bool& isd_ext, const bool& intr, const bool& intr_ext, arma::vec& xm, arma::vec& xv, arma::vec& xs);
-RcppExport SEXP _hierr_create_data(SEXP nobsSEXP, SEXP nvarSEXP, SEXP nvar_extSEXP, SEXP nvar_unpenSEXP, SEXP nvar_totalSEXP, SEXP xSEXP, SEXP extSEXP, SEXP unpenSEXP, SEXP wSEXP, SEXP isdSEXP, SEXP isd_extSEXP, SEXP intrSEXP, SEXP intr_extSEXP, SEXP xmSEXP, SEXP xvSEXP, SEXP xsSEXP) {
+RcppExport SEXP _xrnet_create_data(SEXP nobsSEXP, SEXP nvarSEXP, SEXP nvar_extSEXP, SEXP nvar_unpenSEXP, SEXP nvar_totalSEXP, SEXP xSEXP, SEXP extSEXP, SEXP unpenSEXP, SEXP wSEXP, SEXP isdSEXP, SEXP isd_extSEXP, SEXP intrSEXP, SEXP intr_extSEXP, SEXP xmSEXP, SEXP xvSEXP, SEXP xsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -66,7 +66,7 @@ END_RCPP
 }
 // mean_sparse
 double mean_sparse(const arma::sp_mat& x, int& col_cur, const int& nvar);
-RcppExport SEXP _hierr_mean_sparse(SEXP xSEXP, SEXP col_curSEXP, SEXP nvarSEXP) {
+RcppExport SEXP _xrnet_mean_sparse(SEXP xSEXP, SEXP col_curSEXP, SEXP nvarSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -79,7 +79,7 @@ END_RCPP
 }
 // sd_sparse
 double sd_sparse(const arma::sp_mat& x, int& col_cur, double& xm, const int& nvar);
-RcppExport SEXP _hierr_sd_sparse(SEXP xSEXP, SEXP col_curSEXP, SEXP xmSEXP, SEXP nvarSEXP) {
+RcppExport SEXP _xrnet_sd_sparse(SEXP xSEXP, SEXP col_curSEXP, SEXP xmSEXP, SEXP nvarSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -93,7 +93,7 @@ END_RCPP
 }
 // create_data_sparse
 arma::mat create_data_sparse(const int& nobs, const int& nvar, const int& nvar_ext, const int& nvar_unpen, const int& nvar_total, const arma::mat& x, const arma::sp_mat& ext, const arma::mat& unpen, const arma::vec& w, const bool& isd, const bool& isd_ext, const bool& intr, const bool& intr_ext, arma::vec& xm, arma::vec& xv, arma::vec& xs);
-RcppExport SEXP _hierr_create_data_sparse(SEXP nobsSEXP, SEXP nvarSEXP, SEXP nvar_extSEXP, SEXP nvar_unpenSEXP, SEXP nvar_totalSEXP, SEXP xSEXP, SEXP extSEXP, SEXP unpenSEXP, SEXP wSEXP, SEXP isdSEXP, SEXP isd_extSEXP, SEXP intrSEXP, SEXP intr_extSEXP, SEXP xmSEXP, SEXP xvSEXP, SEXP xsSEXP) {
+RcppExport SEXP _xrnet_create_data_sparse(SEXP nobsSEXP, SEXP nvarSEXP, SEXP nvar_extSEXP, SEXP nvar_unpenSEXP, SEXP nvar_totalSEXP, SEXP xSEXP, SEXP extSEXP, SEXP unpenSEXP, SEXP wSEXP, SEXP isdSEXP, SEXP isd_extSEXP, SEXP intrSEXP, SEXP intr_extSEXP, SEXP xmSEXP, SEXP xvSEXP, SEXP xsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -119,7 +119,7 @@ END_RCPP
 }
 // gaussian_fit
 List gaussian_fit(const arma::mat& x_, const arma::vec& y_, const arma::mat& ext_, const arma::mat& fixed_, const int& nobs, const int& nvar, const int& nvar_ext, const int& nvar_unpen, const arma::vec& w, const arma::vec& ptype, const double& tau, const double& tau_ext, const arma::vec& cmult, NumericVector& lower_cl, NumericVector& upper_cl, const int& ne, const int& nx, const int& nlam, const int& nlam_ext, const double& pratio, const double& pratio_ext, NumericVector ulam_, NumericVector ulam_ext_, const double& thr, const int& maxit, const bool& earlyStop, const bool& isd, const bool& isd_ext, const bool& intr, const bool& intr_ext);
-RcppExport SEXP _hierr_gaussian_fit(SEXP x_SEXP, SEXP y_SEXP, SEXP ext_SEXP, SEXP fixed_SEXP, SEXP nobsSEXP, SEXP nvarSEXP, SEXP nvar_extSEXP, SEXP nvar_unpenSEXP, SEXP wSEXP, SEXP ptypeSEXP, SEXP tauSEXP, SEXP tau_extSEXP, SEXP cmultSEXP, SEXP lower_clSEXP, SEXP upper_clSEXP, SEXP neSEXP, SEXP nxSEXP, SEXP nlamSEXP, SEXP nlam_extSEXP, SEXP pratioSEXP, SEXP pratio_extSEXP, SEXP ulam_SEXP, SEXP ulam_ext_SEXP, SEXP thrSEXP, SEXP maxitSEXP, SEXP earlyStopSEXP, SEXP isdSEXP, SEXP isd_extSEXP, SEXP intrSEXP, SEXP intr_extSEXP) {
+RcppExport SEXP _xrnet_gaussian_fit(SEXP x_SEXP, SEXP y_SEXP, SEXP ext_SEXP, SEXP fixed_SEXP, SEXP nobsSEXP, SEXP nvarSEXP, SEXP nvar_extSEXP, SEXP nvar_unpenSEXP, SEXP wSEXP, SEXP ptypeSEXP, SEXP tauSEXP, SEXP tau_extSEXP, SEXP cmultSEXP, SEXP lower_clSEXP, SEXP upper_clSEXP, SEXP neSEXP, SEXP nxSEXP, SEXP nlamSEXP, SEXP nlam_extSEXP, SEXP pratioSEXP, SEXP pratio_extSEXP, SEXP ulam_SEXP, SEXP ulam_ext_SEXP, SEXP thrSEXP, SEXP maxitSEXP, SEXP earlyStopSEXP, SEXP isdSEXP, SEXP isd_extSEXP, SEXP intrSEXP, SEXP intr_extSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -159,7 +159,7 @@ END_RCPP
 }
 // gaussian_fit_sparse
 List gaussian_fit_sparse(const arma::mat& x_, const arma::vec& y_, const arma::sp_mat& ext_, const arma::mat& fixed_, const int& nobs, const int& nvar, const int& nvar_ext, const int& nvar_unpen, const arma::vec& w, const arma::vec& ptype, const double& tau, const double& tau_ext, const arma::vec& cmult, NumericVector& lower_cl, NumericVector& upper_cl, const int& ne, const int& nx, const int& nlam, const int& nlam_ext, const double& pratio, const double& pratio_ext, NumericVector ulam_, NumericVector ulam_ext_, const double& thr, const int& maxit, const bool& earlyStop, const bool& isd, const bool& isd_ext, const bool& intr, const bool& intr_ext);
-RcppExport SEXP _hierr_gaussian_fit_sparse(SEXP x_SEXP, SEXP y_SEXP, SEXP ext_SEXP, SEXP fixed_SEXP, SEXP nobsSEXP, SEXP nvarSEXP, SEXP nvar_extSEXP, SEXP nvar_unpenSEXP, SEXP wSEXP, SEXP ptypeSEXP, SEXP tauSEXP, SEXP tau_extSEXP, SEXP cmultSEXP, SEXP lower_clSEXP, SEXP upper_clSEXP, SEXP neSEXP, SEXP nxSEXP, SEXP nlamSEXP, SEXP nlam_extSEXP, SEXP pratioSEXP, SEXP pratio_extSEXP, SEXP ulam_SEXP, SEXP ulam_ext_SEXP, SEXP thrSEXP, SEXP maxitSEXP, SEXP earlyStopSEXP, SEXP isdSEXP, SEXP isd_extSEXP, SEXP intrSEXP, SEXP intr_extSEXP) {
+RcppExport SEXP _xrnet_gaussian_fit_sparse(SEXP x_SEXP, SEXP y_SEXP, SEXP ext_SEXP, SEXP fixed_SEXP, SEXP nobsSEXP, SEXP nvarSEXP, SEXP nvar_extSEXP, SEXP nvar_unpenSEXP, SEXP wSEXP, SEXP ptypeSEXP, SEXP tauSEXP, SEXP tau_extSEXP, SEXP cmultSEXP, SEXP lower_clSEXP, SEXP upper_clSEXP, SEXP neSEXP, SEXP nxSEXP, SEXP nlamSEXP, SEXP nlam_extSEXP, SEXP pratioSEXP, SEXP pratio_extSEXP, SEXP ulam_SEXP, SEXP ulam_ext_SEXP, SEXP thrSEXP, SEXP maxitSEXP, SEXP earlyStopSEXP, SEXP isdSEXP, SEXP isd_extSEXP, SEXP intrSEXP, SEXP intr_extSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -199,17 +199,17 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_hierr_coord_desc", (DL_FUNC) &_hierr_coord_desc, 23},
-    {"_hierr_create_data", (DL_FUNC) &_hierr_create_data, 16},
-    {"_hierr_mean_sparse", (DL_FUNC) &_hierr_mean_sparse, 3},
-    {"_hierr_sd_sparse", (DL_FUNC) &_hierr_sd_sparse, 4},
-    {"_hierr_create_data_sparse", (DL_FUNC) &_hierr_create_data_sparse, 16},
-    {"_hierr_gaussian_fit", (DL_FUNC) &_hierr_gaussian_fit, 30},
-    {"_hierr_gaussian_fit_sparse", (DL_FUNC) &_hierr_gaussian_fit_sparse, 30},
+    {"_xrnet_coord_desc", (DL_FUNC) &_xrnet_coord_desc, 23},
+    {"_xrnet_create_data", (DL_FUNC) &_xrnet_create_data, 16},
+    {"_xrnet_mean_sparse", (DL_FUNC) &_xrnet_mean_sparse, 3},
+    {"_xrnet_sd_sparse", (DL_FUNC) &_xrnet_sd_sparse, 4},
+    {"_xrnet_create_data_sparse", (DL_FUNC) &_xrnet_create_data_sparse, 16},
+    {"_xrnet_gaussian_fit", (DL_FUNC) &_xrnet_gaussian_fit, 30},
+    {"_xrnet_gaussian_fit_sparse", (DL_FUNC) &_xrnet_gaussian_fit_sparse, 30},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_hierr(DllInfo *dll) {
+RcppExport void R_init_xrnet(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

@@ -1,4 +1,4 @@
-hierr: R Package for Hierarchical Regularized Regression
+xrnet: R Package for Hierarchical Regularized Regression
 ================
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -12,7 +12,7 @@ status](https://ci.appveyor.com/api/projects/status/6pr8hlc4wg9vjcxd?svg=true)](
 
 # Introduction
 
-The **hierr** R package is an extension of regularized regression
+The **xrnet** R package is an extension of regularized regression
 (i.e. ridge regression) that enables the incorporation of external data
 that may be informative for the effects of predictors on an outcome of
 interest. Let \(y\) be an n-dimensional observed outcome vector, \(X\)
@@ -61,7 +61,7 @@ outcomes (i.e. binomial, count).
     [RTools](https://cran.r-project.org/bin/windows/Rtools/) (not an R
     package)
 2.  Install the R package [devtools](https://github.com/hadley/devtools)
-3.  Install hierr package with the install\_github function (optionally
+3.  Install xrnet package with the install\_github function (optionally
     you can install the most recent / potentially unstable development
     branch)
 4.  Load the package
@@ -72,19 +72,19 @@ outcomes (i.e. binomial, count).
 library(devtools)
 
 # Master branch
-install_github("USCbiostats/hierr")
+install_github("USCbiostats/xrnet")
 
 # Or the development branch
-install_github("USCbiostats/hierr", ref = "development")
+install_github("USCbiostats/xrnet", ref = "development")
 ```
 
 ``` r
-library(hierr)
+library(xrnet)
 ```
 
 # A First Example
 
-As an example of how you might use the hierr package, we have provided a
+As an example of how you might use the xrnet package, we have provided a
 small set of simulated external data variables (ext), predictors (x),
 and a continuous outcome variable (y). First, load the example data:
 
@@ -104,7 +104,7 @@ penalty is applied to the predictors and a lasso penalty is applied to
 the external data.
 
 ``` r
-hierr_model <- hierr(x = x_linear, 
+xrnet_model <- hierr(x = x_linear, 
                      y = y_linear, 
                      external = ext_linear, 
                      family = "gaussian")
@@ -138,7 +138,7 @@ myPenalty <- definePenalty(penalty_type = 0,
                            num_penalty = 30, 
                            num_penalty_ext = 30)
 
-hierr_model <- hierr(x = x_linear, 
+xrnet_model <- hierr(x = x_linear, 
                      y = y_linear, 
                      external = ext_linear, 
                      family = "gaussian", 
@@ -154,7 +154,7 @@ determine the optimal values for the penalties. The cross-validation
 function `cvhierr` is used as follows.
 
 ``` r
-cv_hierr <- cvhierr(x = x_linear, 
+cv_xrnet <- cvhierr(x = x_linear, 
                     y = y_linear, 
                     external = ext_linear, 
                     family = "gaussian")
@@ -165,7 +165,7 @@ plot of the mean cross-validation error across the grid of penalties
 with the `plot` function.
 
 ``` r
-plot(cv_hierr)
+plot(cv_xrnet)
 ```
 
 ![](readme_files/readmecv_results-1.png)<!-- -->

@@ -53,7 +53,7 @@ ztest <- readRDS(file = "testdata/ztest.rds")
 b0_glmnet <- readRDS(file = "testdata/b0_glmnet.rds")
 betas_glmnet <- readRDS(file = "testdata/betas_glmnet.rds")
 
-myPenalty <- hierr::definePenalty(penalty_type = 0, num_penalty = 100)
+myPenalty <- definePenalty(penalty_type = 0, num_penalty = 100)
 myControl <- list(tolerance = 1e-15, earlyStop = FALSE)
 
 # Ridge Regression #

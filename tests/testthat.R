@@ -1,5 +1,5 @@
 Sys.setenv("R_TESTS" = "")
 library(testthat)
-library(hierr)
+library(xrnet)
 library(Matrix)
-test_check("hierr")
+test_check("xrnet")
