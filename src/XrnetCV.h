@@ -285,6 +285,29 @@ public:
         }
         return -2 * error;
     }
+
+    // data passing in need to be sorted in increasing / non-decreasing order
+    static double cindex(const Eigen::Ref<const Eigen::MatrixXd> & actual,
+                         const Eigen::Ref<const Eigen::VectorXd> & predicted,
+                         const Eigen::Ref<const Eigen::VectorXi> & test_idx) {
+        std::vector<int> wh;
+        for (int i = 0; i < test_idx.size()-1; i++) {
+            if (actual(test_idx[i],1) == 1) {
+                wh.push_back(i);
+            }
+        }
+        double total(0), concordant(0);
+        for (auto e : wh) {
+            for (int j = e+1; j < test_idx.size(); j++) {
+                if (actual(test_idx[j], 0) > actual(test_idx[e], 0)) {
+                    total += 1;
+                    if (predicted[test_idx[j]] < predicted[test_idx[e]]) concordant += 1;
+                    else if (predicted[test_idx[j]] == predicted[test_idx[e]]) concordant += 0.5;
+                }
+            }
+        }
+        return concordant / total;
+    }
 };
 
 #endif // XRNET_CV_H
