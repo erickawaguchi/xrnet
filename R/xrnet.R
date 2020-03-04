@@ -108,7 +108,7 @@ xrnet <- function(x,
                   y,
                   external = NULL,
                   unpen = NULL,
-                  family = c("gaussian", "binomial"),
+                  family = c("gaussian", "binomial", "cox"),
                   penalty_main = define_penalty(),
                   penalty_external = define_penalty(),
                   weights = NULL,
@@ -144,7 +144,24 @@ xrnet <- function(x,
     }
 
     # check type of y
-    y <- as.double(drop(y))
+    if (family == "cox") {
+        if ("Surv" %in% class(x)) {
+            y <- cbind(y[, 1], y[, 2])
+        }
+        if (any(y[, 1] < 0)) {
+            stop("time column for survival outcome, y, contains negative-values")
+        }
+        if (is.unsorted(y[, 1])) {
+            stop("x and y must be sorted by time column for survival outcome")
+        }
+        if (any(!(y[, 2] %in% c(0, 1)))) {
+            stop("status column for survival outcome, y, must be coded 0/1")
+        }
+        intercept[1] <- FALSE
+        message("Note: Intercept for x features automatically coerced to FALSE for family = 'cox'")
+    } else {
+        y <- as.double(drop(y))
+    }
 
     # check dimensions of x and y
     nr_x <- NROW(x)

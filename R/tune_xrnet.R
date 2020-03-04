@@ -94,13 +94,13 @@ tune_xrnet <- function(x,
                        y,
                        external = NULL,
                        unpen = NULL,
-                       family = c("gaussian", "binomial"),
+                       family = c("gaussian", "binomial", "cox"),
                        penalty_main = define_penalty(),
                        penalty_external = define_penalty(),
                        weights = NULL,
                        standardize = c(TRUE, TRUE),
                        intercept = c(TRUE, FALSE),
-                       loss = c("deviance", "mse", "mae", "auc"),
+                       loss = c("deviance", "mse", "mae", "auc", "c-index"),
                        nfolds = 5,
                        foldid = NULL,
                        parallel = FALSE,
@@ -118,6 +118,8 @@ tune_xrnet <- function(x,
             loss <- "mse"
         } else if (family == "binomial") {
             loss <- "auc"
+        } else if (family == "cox") {
+            loss <- "c-index"
         }
     } else {
         loss <- match.arg(loss)
@@ -125,6 +127,8 @@ tune_xrnet <- function(x,
         if (family == "gaussian" && !(loss %in% c("deviance", "mse", "mae"))) {
             loss_available <- FALSE
         } else if (family == "binomial" && !(loss %in% c("deviance", "auc"))) {
+            loss_available <- FALSE
+        } else if (family == "cox" && !(loss %in% c("c-index"))) {
             loss_available <- FALSE
         }
         if (!loss_available) {
@@ -155,8 +159,25 @@ tune_xrnet <- function(x,
     # check external type
     is_sparse_ext <- is(external, "sparseMatrix")
 
-    # check y type
-    y <- drop(as.numeric(y))
+    # check type of y
+    if (family == "cox") {
+        if ("Surv" %in% class(x)) {
+            y <- cbind(y[, 1], y[, 2])
+        }
+        if (any(y[, 1] < 0)) {
+            stop("time column for survival outcome, y, contains negative-values")
+        }
+        if (is.unsorted(y[, 1])) {
+            stop("x and y must be sorted by time column for survival outcome")
+        }
+        if (any(!(y[, 2] %in% c(0, 1)))) {
+            stop("status column for survival outcome, y, must be coded 0/1")
+        }
+        intercept[1] <- FALSE
+        message("Note: Intercept for x features automatically coerced to FALSE for family = 'cox'")
+    } else {
+        y <- as.double(drop(y))
+    }
 
     # Get arguments to tune_xrnet() function and filter for calls to fitting procedure
     xrnet_call <- match.call(expand.dots = TRUE)
