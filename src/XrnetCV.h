@@ -196,6 +196,7 @@ public:
         lossMap.insert(std::make_pair<std::string, lossPtr>("mae", mean_absolute_error));
         lossMap.insert(std::make_pair<std::string, lossPtr>("auc", auc));
         lossMap.insert(std::make_pair<std::string, lossPtr>("deviance_binomial", deviance_binomial));
+        lossMap.insert(std::make_pair<std::string, lossPtr>("cindex", cindex));
 
         lossPtr loss_func = nullptr;
         if (user_loss == "default")
@@ -205,6 +206,9 @@ public:
             }
             else if (family == "binomial") {
                 loss_func = auc;
+            }
+            else if (family == "cox") {
+                loss_func = cindex;
             }
         }
         else if (user_loss == "deviance")

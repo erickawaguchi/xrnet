@@ -5,6 +5,7 @@
 #include "CoordDescTypes.h"
 #include "GaussianSolver.h"
 #include "BinomialSolver.h"
+#include "CoxSolver.h"
 
 template <typename TX, typename TZ>
 Eigen::VectorXd fitModelCV(const TX & x,
@@ -80,7 +81,18 @@ Eigen::VectorXd fitModelCV(const TX & x,
                     lower_cl.data(), ne, nx, thresh, maxit
             )
         );
+    } else if (family == "cox") {
+        solver.reset(
+            new CoxSolver<TX>(
+                    y, x, fixedmap, xz, cent.data(), xv.data(),
+                    xs.data(), weights_user, intr[0], penalty_type.data(),
+                    cmult.data(), quantiles, upper_cl.data(),
+                    lower_cl.data(), ne, nx, thresh, maxit
+            )
+        );
     }
+
+
     // Object to hold results for all penalty combinations
     const int num_combn = num_penalty[0] * num_penalty[1];
     XrnetCV<TX, TZ> results = XrnetCV<TX, TZ>(

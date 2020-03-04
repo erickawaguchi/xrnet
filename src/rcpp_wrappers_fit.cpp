@@ -5,6 +5,7 @@
 #include "XrnetUtils.h"
 #include "GaussianSolver.h"
 #include "BinomialSolver.h"
+#include "CoxSolver.h"
 
 template <typename TX, typename TZ>
 Rcpp::List fitModel(const TX & x,
@@ -76,6 +77,15 @@ Rcpp::List fitModel(const TX & x,
                 xs.data(), weights_user, intr[0], penalty_type.data(),
                 cmult.data(), quantiles, upper_cl.data(),
                 lower_cl.data(), ne, nx, thresh, maxit
+            )
+        );
+    } else if (family == "cox") {
+        solver.reset(
+            new CoxSolver<TX>(
+                    y, x, fixedmap, xz, cent.data(), xv.data(),
+                    xs.data(), weights_user, intr[0], penalty_type.data(),
+                    cmult.data(), quantiles, upper_cl.data(),
+                    lower_cl.data(), ne, nx, thresh, maxit
             )
         );
     }

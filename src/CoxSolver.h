@@ -23,7 +23,7 @@ private:
     vector<double> d;
     VecXi ri;
     VecXi ck;
-    const int m;
+    int m;
     using CoordSolver<T>::n;
     using CoordSolver<T>::nv_total;
     using CoordSolver<T>::intercept;
@@ -90,7 +90,7 @@ public:
                              max_iterations_),
                              eta(n),
                              delta(n),
-                             ri(m+1),   //// this could be problem, m is unknown now
+                             ri(1),   //// this could be problem, m is unknown now
                              ck(n+1)
                              {
                                  init();
@@ -135,7 +135,7 @@ public:
                              max_iterations_),
                              eta(n),
                              delta(n),
-                             ri(m+1),
+                             ri(1),
                              ck(n+1)
                              {
                                  init();
@@ -162,6 +162,7 @@ public:
         }
         D.erase(D.begin());
         m = D.size();
+        ri.resize(m+1);
         // get ck, and ri, risk sets
         int ck_prime = 0;
         ri[0] = n;

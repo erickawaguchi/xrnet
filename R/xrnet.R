@@ -35,6 +35,7 @@ NULL
 #' \itemize{
 #'     \item "gaussian"
 #'     \item "binomial"
+#'     \item "cox"
 #' }
 #' @param penalty_main specifies regularization object for x. See \code{\link{define_penalty}} for more details.
 #' @param penalty_external specifies regularization object for external. See \code{\link{define_penalty}} for more details.
