@@ -49,7 +49,7 @@ Rcpp::List fitModel(const TX & x,
     weights_user.array() = weights_user.array() / weights_user.sum();
 
     // compute moments of matrices and create XZ (if external data present)
-    const bool center_x = intr[0] && !is_sparse_x;
+    const bool center_x = (intr[0] && !is_sparse_x) || family == "cox";
     compute_moments(x, weights_user, xm, cent, xv, xs, center_x, stnd[0], 0);
     compute_moments(fixedmap, weights_user, xm, cent, xv, xs, center_x, stnd[0], nv_x);
     const Eigen::MatrixXd xz = create_XZ(
