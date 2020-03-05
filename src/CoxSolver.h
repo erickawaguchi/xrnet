@@ -211,9 +211,11 @@ public:
     }
 
     // warm start initialization given current estimates
-    virtual void warm_start(const Eigen::Ref<const Eigen::VectorXd> & betas_start) {
+    virtual void warm_start(const double & b0_start,
+                            const Eigen::Ref<const Eigen::VectorXd> & betas_start) {
 
         // initialize estimates with provided values
+        b0 = b0_start;
         betas = betas_start;
 
         // update residuals, working response, weighted sum squres X / XZ
