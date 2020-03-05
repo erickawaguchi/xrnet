@@ -92,7 +92,6 @@ Eigen::VectorXd fitModelCV(const TX & x,
         );
     }
 
-
     // Object to hold results for all penalty combinations
     const int num_combn = num_penalty[0] * num_penalty[1];
     XrnetCV<TX, TZ> results = XrnetCV<TX, TZ>(

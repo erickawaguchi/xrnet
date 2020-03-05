@@ -196,7 +196,7 @@ public:
         lossMap.insert(std::make_pair<std::string, lossPtr>("mae", mean_absolute_error));
         lossMap.insert(std::make_pair<std::string, lossPtr>("auc", auc));
         lossMap.insert(std::make_pair<std::string, lossPtr>("deviance_binomial", deviance_binomial));
-        lossMap.insert(std::make_pair<std::string, lossPtr>("cindex", cindex));
+        lossMap.insert(std::make_pair<std::string, lossPtr>("c-index", cindex));
 
         lossPtr loss_func = nullptr;
         if (user_loss == "default")
@@ -294,6 +294,8 @@ public:
     static double cindex(const Eigen::Ref<const Eigen::MatrixXd> & actual,
                          const Eigen::Ref<const Eigen::VectorXd> & predicted,
                          const Eigen::Ref<const Eigen::VectorXi> & test_idx) {
+
+
         std::vector<int> wh;
         for (int i = 0; i < test_idx.size()-1; i++) {
             if (actual(test_idx[i],1) == 1) {

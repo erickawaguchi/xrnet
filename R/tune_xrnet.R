@@ -176,7 +176,6 @@ tune_xrnet <- function(x,
             stop("status column for survival outcome, y, must be coded 0/1")
         }
         intercept[1] <- FALSE
-        message("Note: Intercept for x features automatically coerced to FALSE for family = 'cox'")
     } else {
         y <- as.double(drop(y))
     }
@@ -191,7 +190,7 @@ tune_xrnet <- function(x,
     xrnet_call[[1]] <- as.name("xrnet")
 
     # Set sample size / weights
-    n <- length(y)
+    n <- NROW(y)
     if (is.null(weights)) {
         weights <- rep(1, n)
     }

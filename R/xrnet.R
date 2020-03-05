@@ -159,7 +159,6 @@ xrnet <- function(x,
             stop("status column for survival outcome, y, must be coded 0/1")
         }
         intercept[1] <- FALSE
-        message("Note: Intercept for x features automatically coerced to FALSE for family = 'cox'")
     } else {
         y <- as.double(drop(y))
     }
