@@ -156,6 +156,7 @@ public:
             D.push_back(y(n - 1, 0));
             d.push_back(events);
         }
+        m = D.size();
 
         // get ck, and ri, risk sets
         int ck_prime = 0;
