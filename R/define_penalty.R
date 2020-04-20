@@ -39,21 +39,13 @@
 define_penalty <- function(penalty_type = 1,
                            quantile = 0.5,
                            num_penalty = 20,
+                           gamma = 0.0,
                            penalty_ratio = NULL,
                            user_penalty = NULL,
                            custom_multiplier = NULL) {
 
-    if (any(penalty_type < 0) || any(penalty_type > 1)) {
-        stop("Invalid penalty type")
-    } else {
-        penalty_type <- as.double(penalty_type)
-    }
-
-    if (quantile < 0 || quantile > 1) {
-        stop("Invalid value for quantile, must be between 0 and 1")
-    } else {
-        quantile <- as.double(quantile)
-    }
+    # Use penalty_mapper function to check for errors and convert to right format
+    out <- penalty_mapper(penalty_type, quantile, gamma)
 
     if (is.null(user_penalty)) {
         user_penalty <- as.double(0)
@@ -79,8 +71,9 @@ define_penalty <- function(penalty_type = 1,
     }
 
     penalty_obj <- list(
-        penalty_type = penalty_type,
-        quantile = quantile,
+        penalty_type = out$penalty_type,
+        quantile = out$quantile,
+        #gamma = out$gamma, #Do not use yet.
         num_penalty = num_penalty,
         penalty_ratio = penalty_ratio,
         user_penalty = user_penalty,
@@ -112,7 +105,7 @@ define_lasso <- function(num_penalty = 20,
 
     define_penalty(
         penalty_type = 1,
-        quantile = 0.5,
+        quantile = 1,
         num_penalty = num_penalty,
         penalty_ratio = penalty_ratio,
         user_penalty = user_penalty,
@@ -144,8 +137,8 @@ define_ridge <- function(num_penalty = 20,
                          custom_multiplier = NULL) {
 
     define_penalty(
-        penalty_type = 0,
-        quantile = 0.5,
+        penalty_type = 1,
+        quantile = 0,
         num_penalty = num_penalty,
         penalty_ratio = penalty_ratio,
         user_penalty = user_penalty,
@@ -179,8 +172,8 @@ define_enet <- function(en_param = 0.5,
                         custom_multiplier = NULL) {
 
     define_penalty(
-        penalty_type = en_param,
-        quantile = 0.5,
+        penalty_type = 1,
+        quantile = en_param,
         num_penalty = num_penalty,
         penalty_ratio = penalty_ratio,
         user_penalty = user_penalty,

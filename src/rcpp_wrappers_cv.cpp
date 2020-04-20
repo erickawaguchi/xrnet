@@ -65,7 +65,7 @@ Eigen::VectorXd fitModelCV(const TX & x,
             new GaussianSolver<TX>(
                     y, x, fixedmap, xz, cent.data(), xv.data(), xs.data(),
                     weights_user, intr[0], penalty_type.data(),
-                    cmult.data(), quantiles, upper_cl.data(),
+                    cmult.data(), quantiles.data(), upper_cl.data(),
                     lower_cl.data(), ne, nx, thresh, maxit
             )
         );
@@ -76,7 +76,7 @@ Eigen::VectorXd fitModelCV(const TX & x,
             new BinomialSolver<TX>(
                     y, x, fixedmap, xz, cent.data(), xv.data(),
                     xs.data(), weights_user, intr[0], penalty_type.data(),
-                    cmult.data(), quantiles, upper_cl.data(),
+                    cmult.data(), quantiles.data(), upper_cl.data(),
                     lower_cl.data(), ne, nx, thresh, maxit
             )
         );
