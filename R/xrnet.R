@@ -147,16 +147,15 @@ xrnet <- function(x,
     y <- as.double(drop(y))
 
     # check dimensions of x and y
-    nr_x <- NROW(x)
-    nc_x <- NCOL(x)
+    nr_x  <- NROW(x)
+    nc_x  <- NCOL(x)
     y_len <- NROW(y)
 
     if (y_len != nr_x) {
         stop(
-            paste(
+            paste0(
                 "Length of y (", y_len,
-                ") not equal to the number of rows of x (", nr_x,")",
-                sep = ""
+                ") not equal to the number of rows of x (", nr_x,")"
              )
         )
     }
@@ -184,17 +183,16 @@ xrnet <- function(x,
 
         if (nc_x != nr_ext) {
             stop(
-                paste("Number of columns in x (", nc_x,
+                paste0("Number of columns in x (", nc_x,
                       ") not equal to the number of rows in external (", nr_ext,
-                      ")", sep = ""
+                      ")"
                 )
             )
         }
-
     } else {
         external <- matrix(vector("numeric", 0), 0, 0)
-        nr_ext <- as.integer(0)
-        nc_ext <- as.integer(0)
+        nr_ext   <- as.integer(0)
+        nc_ext   <- as.integer(0)
     }
 
     ## Prepare unpenalized covariates ##
@@ -205,12 +203,10 @@ xrnet <- function(x,
 
         if (y_len != NROW(unpen)) {
             stop(
-                paste(
-                    "Length of y (", y_len,
-                    ") not equal to the number of rows of unpen (", NROW(unpen),
-                    ")", sep = ""
-                )
-            )
+                paste0(
+                    "Length of y (", y_len, ") ",
+                    "not equal to the number of rows of unpen (", NROW(unpen),")"
+                ))
         }
 
         # convert unpen to matrix
@@ -221,7 +217,7 @@ xrnet <- function(x,
             stop("unpen must be a numeric matrix of type 'double'")
         }
     } else {
-        unpen <- matrix(vector("numeric", 0), 0, 0)
+        unpen    <- matrix(vector("numeric", 0), 0, 0)
         nc_unpen <- as.integer(0)
     }
 
@@ -230,12 +226,10 @@ xrnet <- function(x,
         weights <- as.double(rep(1, nr_x))
     } else if (length(weights) != y_len) {
         stop(
-            paste(
-                "Length of weights (", length(weights),
-                ") not equal to length of y (", y_len,
-                ")", sep = ""
-            )
-        )
+            paste0(
+                "Length of weights (", length(weights),") ",
+                "not equal to length of y (", y_len,
+                ")"))
     } else if (any(weights < 0)) {
         stop("weights can only contain non-negative values")
     } else {
@@ -244,51 +238,53 @@ xrnet <- function(x,
 
     # check penalty objects
     penalty <- initialize_penalty(
-        penalty_main = penalty_main,
+        penalty_main     = penalty_main,
         penalty_external = penalty_external,
-        nr_x = nr_x,
-        nc_x = nc_x,
-        nc_unpen = nc_unpen,
-        nr_ext = nr_ext,
-        nc_ext = nc_ext,
-        intercept = intercept
+        nr_x             = nr_x,
+        nc_x             = nc_x,
+        nc_unpen         = nc_unpen,
+        nr_ext           = nr_ext,
+        nc_ext           = nc_ext,
+        intercept        = intercept
     )
+    #ESK: Quantile check
+    #print(penalty$quantiles)
 
     # check control object
     control <- do.call("xrnet.control", control)
     control <- initialize_control(
         control_obj = control,
-        nc_x = nc_x,
-        nc_unpen = nc_unpen,
-        nc_ext = nc_ext,
-        intercept = intercept
+        nc_x        = nc_x,
+        nc_unpen    = nc_unpen,
+        nc_ext      = nc_ext,
+        intercept   = intercept
     )
 
     # fit model
     fit <- fitModelRcpp(
-        x = x,
-        mattype_x = mattype_x,
-        y = y,
-        ext = external,
-        is_sparse_ext = is_sparse_ext,
-        fixed = unpen,
-        weights_user = weights,
-        intr = intercept,
-        stnd = standardize,
-        penalty_type = penalty$ptype,
-        cmult = penalty$cmult,
-        quantiles = c(penalty$quantile, penalty$quantile_ext),
-        num_penalty = c(penalty$num_penalty, penalty$num_penalty_ext),
-        penalty_ratio = c(penalty$penalty_ratio, penalty$penalty_ratio_ext),
-        penalty_user = penalty$user_penalty,
+        x                = x,
+        mattype_x        = mattype_x,
+        y                = y,
+        ext              = external,
+        is_sparse_ext    = is_sparse_ext,
+        fixed            = unpen,
+        weights_user     = weights,
+        intr             = intercept,
+        stnd             = standardize,
+        penalty_type     = penalty$ptype,
+        cmult            = penalty$cmult,
+        quantiles        = penalty$quantiles,
+        num_penalty      = c(penalty$num_penalty, penalty$num_penalty_ext),
+        penalty_ratio    = c(penalty$penalty_ratio, penalty$penalty_ratio_ext),
+        penalty_user     = penalty$user_penalty,
         penalty_user_ext = penalty$user_penalty_ext,
-        lower_cl = control$lower_limits,
-        upper_cl = control$upper_limits,
-        family = family,
-        thresh = control$tolerance,
-        maxit = control$max_iterations,
-        ne = control$dfmax,
-        nx = control$pmax
+        lower_cl         = control$lower_limits,
+        upper_cl         = control$upper_limits,
+        family           = family,
+        thresh           = control$tolerance,
+        maxit            = control$max_iterations,
+        ne               = control$dfmax,
+        nx               = control$pmax
     )
 
     # check status of model fit
@@ -312,7 +308,7 @@ xrnet <- function(x,
         )
 
         dim(fit$betas) <- c(nc_x, penalty$num_penalty_ext, penalty$num_penalty)
-        fit$betas <- aperm(fit$betas, c(1, 3, 2))
+        fit$betas      <- aperm(fit$betas, c(1, 3, 2))
 
         if (intercept[2]) {
             fit$alpha0 <- matrix(
@@ -326,15 +322,15 @@ xrnet <- function(x,
 
         if (nc_ext > 0) {
             dim(fit$alphas) <- c(nc_ext, penalty$num_penalty_ext, penalty$num_penalty)
-            fit$alphas <- aperm(fit$alphas, c(1, 3, 2))
+            fit$alphas      <- aperm(fit$alphas, c(1, 3, 2))
         } else {
-            fit$alphas <- NULL
+            fit$alphas      <- NULL
             fit$penalty_ext <- NULL
         }
 
         if (nc_unpen > 0) {
             dim(fit$gammas) <- c(nc_unpen, penalty$num_penalty_ext, penalty$num_penalty)
-            fit$gammas <- aperm(fit$gammas, c(1, 3, 2))
+            fit$gammas      <- aperm(fit$gammas, c(1, 3, 2))
         } else {
             fit$gammas <- NULL
         }
@@ -343,201 +339,4 @@ xrnet <- function(x,
     fit$call <- this.call
     class(fit) <- "xrnet"
     return(fit)
-}
-
-initialize_penalty <- function(penalty_main,
-                               penalty_external,
-                               nr_x,
-                               nc_x,
-                               nc_unpen,
-                               nr_ext,
-                               nc_ext,
-                               intercept) {
-
-    names(penalty_external) <- c(
-        "penalty_type_ext",
-        "quantile_ext",
-        "num_penalty_ext",
-        "penalty_ratio_ext",
-        "user_penalty_ext",
-        "custom_multiplier_ext"
-    )
-
-    penalty_obj <- c(penalty_main, penalty_external)
-
-    # check penalty object for x
-    if (length(penalty_obj$penalty_type) > 1) {
-        if (length(penalty_obj$penalty_type) != nc_x) {
-            stop(
-                "Length of penalty_type (",
-                length(penalty_obj$penalty_type),
-                ") not equal to number of columns in x (",
-                nc_x,")"
-            )
-        }
-    } else {
-        penalty_obj$penalty_type <- rep(penalty_obj$penalty_type, nc_x)
-    }
-
-    if (is.null(penalty_obj$penalty_ratio)) {
-        if (penalty_obj$user_penalty[1] == 0) {
-            if (nr_x > nc_x) {
-                penalty_obj$penalty_ratio <- 1e-04
-            } else {
-                penalty_obj$penalty_ratio <- 0.01
-            }
-            if (penalty_obj$num_penalty < 3) {
-                penalty_obj$num_penalty <- 3
-                stop("num_penalty must be at least 3
-                     when automatically computing penalty path")
-            }
-        } else {
-            penalty_obj$user_penalty <- rev(sort(penalty_obj$user_penalty))
-            penalty_obj$penalty_ratio <- 0.0
-        }
-    }
-
-    if (is.null(penalty_obj$custom_multiplier)) {
-        penalty_obj$custom_multiplier <- rep(1.0, nc_x)
-    } else if (length(penalty_obj$custom_multiplier) != nc_x) {
-        stop(
-            "Length of custom_multiplier (",
-            length(penalty_obj$custom_multiplier),
-            ") not equal to number of columns in x (",
-            nc_x, ")"
-        )
-    }
-
-    # check penalty object for external
-    if (nc_ext > 0) {
-        if (length(penalty_obj$penalty_type_ext) > 1) {
-            if (length(penalty_obj$penalty_type_ext) != nc_ext) {
-                stop(
-                    "Length of penalty_type_ext (",
-                    length(penalty_obj$penalty_type_ext),
-                    ") not equal to number of columns in external (",
-                    nc_ext,
-                    ")"
-                )
-            }
-        } else {
-            penalty_obj$penalty_type_ext <- rep(penalty_obj$penalty_type_ext, nc_ext)
-        }
-
-        if (is.null(penalty_obj$penalty_ratio_ext)) {
-            if (penalty_obj$user_penalty_ext[1] == 0) {
-                if (nr_ext > nc_ext) {
-                    penalty_obj$penalty_ratio_ext <- 1e-04
-                } else {
-                    penalty_obj$penalty_ratio_ext <- 0.01
-                }
-                if (penalty_obj$num_penalty_ext < 3) {
-                    penalty_obj$num_penalty_ext <- 3
-                    stop("num_penalty_ext must be at least
-                         3 when automatically computing penalty path")
-                }
-            } else {
-                penalty_obj$user_penalty_ext <- rev(sort(penalty_obj$user_penalty_ext))
-                penalty_obj$penalty_ratio_ext <- 0.0
-            }
-        }
-
-        if (is.null(penalty_obj$custom_multiplier_ext)) {
-            penalty_obj$custom_multiplier_ext <- rep(1.0, nc_ext)
-        } else if (length(penalty_obj$custom_multiplier_ext) != nc_ext && nc_ext > 0) {
-            stop(
-                "Length of custom_multiplier_ext (",
-                length(penalty_obj$custom_multiplier_ext),
-                ") not equal to number of columns in external (",
-                nc_ext, ")"
-            )
-        }
-    } else {
-        penalty_obj$penalty_type_ext <- NULL
-        penalty_obj$num_penalty_ext <- 1
-        penalty_obj$penalty_ratio_ext <- 0
-        penalty_obj$custom_multiplier_ext <- numeric(0)
-    }
-
-    # vectors holding penalty type and multipliers across all variables
-    if (intercept[2]) {
-        penalty_obj$ptype <- c(
-            penalty_obj$penalty_type,
-            rep(0.0, nc_unpen),
-            0.0,
-            penalty_obj$penalty_type_ext
-        )
-        penalty_obj$cmult <- c(
-            penalty_obj$custom_multiplier,
-            rep(0.0, nc_unpen),
-            0.0,
-            penalty_obj$custom_multiplier_ext
-        )
-    } else {
-        penalty_obj$ptype <- c(
-            penalty_obj$penalty_type,
-            rep(0.0, nc_unpen),
-            penalty_obj$penalty_type_ext
-        )
-        penalty_obj$cmult <- c(
-            penalty_obj$custom_multiplier,
-            rep(0.0, nc_unpen),
-            penalty_obj$custom_multiplier_ext
-        )
-    }
-    return(penalty_obj)
-}
-
-initialize_control <- function(control_obj,
-                               nc_x,
-                               nc_unpen,
-                               nc_ext,
-                               intercept) {
-
-    if (is.null(control_obj$dfmax)) {
-        control_obj$dfmax <- as.integer(nc_x + nc_ext + nc_unpen + intercept[1] + intercept[2])
-    } else if (control_obj$dfmax <= 0 || as.integer(control_obj$dfmax) != control_obj$dfmax) {
-        stop("dfmax can only contain postive integers")
-    }
-
-    if (is.null(control_obj$pmax)) {
-        control_obj$pmax <- as.integer(min(2 * control_obj$dfmax + 20, nc_x + nc_ext + nc_unpen + intercept[2]))
-    } else if (control_obj$pmax <= 0 || as.integer(control_obj$pmax) != control_obj$pmax) {
-        stop("pmax can only contain positive integers")
-    }
-
-    if (is.null(control_obj$lower_limits)) {
-        control_obj$lower_limits <- rep(-Inf, nc_x + nc_ext + nc_unpen + intercept[2])
-    } else if (length(control_obj$lower_limits) != nc_x + nc_ext + nc_unpen) {
-        stop(
-            "Length of lower_limits (",
-            length(control_obj$lower_limits),
-            ") not equal to sum of number of columns in x, unpen, and external (",
-            nc_x + nc_ext + nc_unpen, ")"
-        )
-    } else if (intercept[2]) {
-        control_obj$lower_limits <- c(
-            control_obj$lower_limits[1:(nc_x + nc_unpen)],
-            -Inf,
-            control_obj$lower_limits[(nc_x + nc_unpen + 1):length(control_obj$lower_limits)]
-        )
-    }
-
-    if (is.null(control_obj$upper_limits)) {
-        control_obj$upper_limits <- rep(Inf, nc_x + nc_ext + nc_unpen + intercept[2])
-    } else if (length(control_obj$upper_limits) != nc_x + nc_ext + nc_unpen) {
-        stop(
-            "Length of upper_limits (",
-            length(control_obj$upper_limits),
-            ") not equal to sum of number of columns in x, unpen, and external (",
-            nc_x + nc_ext + nc_unpen, ")"
-        )
-    } else if (intercept[2]) {
-        control_obj$upper_limits <- c(
-            control_obj$upper_limits[1:(nc_x + nc_unpen)],
-            -Inf,
-            control_obj$upper_limits[(nc_x + nc_unpen + 1):length(control_obj$upper_limits)]
-        )
-    }
-    return(control_obj)
 }

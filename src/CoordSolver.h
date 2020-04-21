@@ -220,6 +220,7 @@ public:
         }
     }
 
+    // penalty[0] = lambda1; penakty[1] = lambda2
     // coord desc to solve weighted linear regularized regression
     void coord_desc() {
         while (num_passes < max_iterations) {
