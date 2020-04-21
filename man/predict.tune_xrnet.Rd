@@ -4,15 +4,9 @@
 \alias{predict.tune_xrnet}
 \title{Predict function for "tune_xrnet" object}
 \usage{
-\method{predict}{tune_xrnet}(
-  object,
-  newdata = NULL,
-  newdata_fixed = NULL,
-  p = "opt",
-  pext = "opt",
-  type = c("response", "link", "coefficients"),
-  ...
-)
+\method{predict}{tune_xrnet}(object, newdata = NULL,
+  newdata_fixed = NULL, p = "opt", pext = "opt",
+  type = c("response", "link", "coefficients"), ...)
 }
 \arguments{
 \item{object}{A \code{\link{tune_xrnet}} object}
