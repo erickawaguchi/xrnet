@@ -21,7 +21,7 @@ initialize_penalty <- function(penalty_main,
     penalty_obj$penalty_type <- rep(penalty_obj$penalty_type, nc_x)
 
     # ESK: Add quantiles
-    penalty_obj$quantile <- rep(penalty_obj$quantile, nc_x)
+    #penalty_obj$quantile <- rep(penalty_obj$quantile, nc_x)
 
     if (is.null(penalty_obj$penalty_ratio)) {
         if (penalty_obj$user_penalty[1] == 0) {
@@ -57,7 +57,7 @@ initialize_penalty <- function(penalty_main,
         penalty_obj$penalty_type_ext <- rep(penalty_obj$penalty_type_ext, nc_ext)
 
         # ESK: Add quantiles
-        penalty_obj$quantile_ext <- rep(penalty_obj$quantile_ext, nc_ext)
+        #penalty_obj$quantile_ext <- rep(penalty_obj$quantile_ext, nc_ext)
 
         if (is.null(penalty_obj$penalty_ratio_ext)) {
             if (penalty_obj$user_penalty_ext[1] == 0) {
@@ -109,12 +109,6 @@ initialize_penalty <- function(penalty_main,
             0.0,
             penalty_obj$custom_multiplier_ext
         )
-        penalty_obj$quantiles <- c(
-            penalty_obj$quantile,
-            rep(0.0, nc_unpen),
-            0.0,
-            penalty_obj$quantile_ext
-        )
     } else {
         penalty_obj$ptype <- c(
             penalty_obj$penalty_type,
@@ -126,11 +120,17 @@ initialize_penalty <- function(penalty_main,
             rep(0.0, nc_unpen),
             penalty_obj$custom_multiplier_ext
         )
-        penalty_obj$quantiles <- c(
-            penalty_obj$quantile,
-            rep(0.0, nc_unpen),
-            penalty_obj$quantile_ext
-        )
     }
+
+    #penalty_obj$quantiles <- c(
+    #    penalty_obj$quantile,
+    #    penalty_obj$quantile_ext
+    #)
+
+    #penalty_obj$gammas <- c(
+    #    penalty_obj$gamma,
+    #    penalty_obj$gamma_ext
+    #)
+
     return(penalty_obj)
 }

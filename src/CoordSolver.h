@@ -209,6 +209,7 @@ public:
     void setBetas(const Eigen::Ref<const Eigen::VectorXd> & betas_) {betas = betas_;}
 
     // Penalty types:
+    // 0: Unpenalized
     // 1: Elastic Net family
     // 2: Quantile regression
     // 3: SCAD
@@ -228,24 +229,24 @@ public:
         }
     }
 
-    // penalty[0] = lambda1; penakty[1] = lambda2
+    // penalty[0] = lambda1; penalty[1] = lambda2
     // coord desc to solve weighted linear regularized regression
     void coord_desc() {
         while (num_passes < max_iterations) {
             dlx = 0.0;
             int idx = 0;
-            update_beta_screen(X, penalty[0], penalty_type[0], quantiles[0], idx);
+            update_beta_screen(X, penalty[0], quantiles[0], gamma[0], idx);
             update_beta_screen(Fixed, penalty[0], 0.0, 0.0, idx);
-            update_beta_screen(XZ, penalty[1], penalty_type[1], quantiles[1],idx);
+            update_beta_screen(XZ, penalty[1], quantiles[1], gamma[1], idx);
             if (intercept) update_intercept();
             ++num_passes;
             if (dlx < tolerance) break;
             while (num_passes < max_iterations) {
                 dlx = 0.0;
                 idx = 0;
-                update_beta_active(X, penalty[0], penalty_type[0], quantiles[0], idx);
+                update_beta_active(X, penalty[0], quantiles[0], gamma[0],  idx);
                 update_beta_active(Fixed, penalty[0], 0.0, 0.0, idx);
-                update_beta_active(XZ, penalty[1], penalty_type[1], quantiles[1], idx);
+                update_beta_active(XZ, penalty[1], quantiles[1], gamma[1],  idx);
                 if (intercept) update_intercept();
                 ++num_passes;
                 if (dlx < tolerance) break;
@@ -257,8 +258,8 @@ public:
     template <typename matType>
     void update_beta_screen(const matType & x,
                             const double & lam,
-                            const double & ptype,
-                            const double & qtile,
+                            const double & quant,
+                            const double & gamm,
                             int & idx) {
         for (int k = 0; k < x.cols(); ++k, ++idx) {
             if (strong_set[idx]) {
@@ -273,18 +274,18 @@ public:
                                                    grad / xv[idx]));
                 } else if (penalty_type[idx] == 1) {
                     // Elastic-Net regularization
-                    double grad_thresh = std::abs(grad) - cmult[idx] * quantiles[idx] * lam;
+                    double grad_thresh = std::abs(grad) - cmult[idx] * quant * lam;
                     if (grad_thresh > 0.0) {
                         betas[idx] = std::max(lcl[idx],
                                               std::min(ucl[idx],
-                                                       copysign(grad_thresh, grad) / (xv[idx] + cmult[idx] * (1 - quantiles[idx]) * lam)));
+                                                       copysign(grad_thresh, grad) / (xv[idx] + cmult[idx] * (1 - quant) * lam)));
                     }
                     else {
                         betas[idx] = 0.0;
                     }
                 } else if (penalty_type[idx] == 2) {
                     // Q1 regularization
-                    grad += cmult[idx] * lam * (2 * quantiles[idx] - 1);
+                    grad += cmult[idx] * lam * (2 * quant - 1);
                     double grad_thresh = std::abs(grad) - cmult[idx] * lam;
                     if (grad_thresh > 0.0) {
                         betas[idx] = std::max(lcl[idx],
@@ -312,8 +313,8 @@ public:
     template <typename matType>
     void update_beta_active(const matType & x,
                             const double & lam,
-                            const double & ptype,
-                            const double & qtile,
+                            const double & quant,
+                            const double & gamm,
                             int & idx) {
         for (int k = 0; k < x.cols(); ++k, ++idx) {
             if (active_set[idx]) {
@@ -328,18 +329,18 @@ public:
                                                    grad / xv[idx]));
                 } else if (penalty_type[idx] == 1) {
                     // Elastic-Net regularization
-                    double grad_thresh = std::abs(grad) - cmult[idx] * quantiles[idx] * lam;
+                    double grad_thresh = std::abs(grad) - cmult[idx] * quant * lam;
                     if (grad_thresh > 0.0) {
                         betas[idx] = std::max(lcl[idx],
                                               std::min(ucl[idx],
-                                                       copysign(grad_thresh, grad) / (xv[idx] + cmult[idx] * (1 - quantiles[idx]) * lam)));
+                                                       copysign(grad_thresh, grad) / (xv[idx] + cmult[idx] * (1 - quant) * lam)));
                     }
                     else {
                         betas[idx] = 0.0;
                     }
                 } else if (penalty_type[idx] == 2) {
                     // Q1 regularization
-                    grad += cmult[idx] * lam * (2 * quantiles[idx] - 1);
+                    grad += cmult[idx] * lam * (2 * quant - 1);
                     double grad_thresh = std::abs(grad) - cmult[idx] * lam;
                     if (grad_thresh > 0.0) {
                         betas[idx] = std::max(lcl[idx],
@@ -440,12 +441,13 @@ public:
         } else if (penalty_type[idx] == 1) {
             for (int k = 0; k < X.cols(); ++k, ++idx) {
                 if (!strong_set[idx]) {
-                    strong_set[idx] = std::abs(gradient[idx]) > lam_diff * quantiles[idx] * cmult[idx];
+                    strong_set[idx] = std::abs(gradient[idx]) > lam_diff * quantiles[0] * cmult[idx];
                 }
             }
         }
         // End penalty checks
         idx += Fixed.cols();
+        // Update strong set for external variables
         if (XZ.cols() > 0) {
             if (m2 == 0) {
                 std::fill(strong_set.begin() + X.cols() + Fixed.cols(), strong_set.end(), false);
@@ -464,7 +466,7 @@ public:
             } else if (penalty_type[idx] == 1) {
                 for (int k = 0; k < XZ.cols(); ++k, ++idx) {
                     if (!strong_set[idx]) {
-                        strong_set[idx] = std::abs(gradient[idx]) > lam_diff * quantiles[idx] * cmult[idx];
+                        strong_set[idx] = std::abs(gradient[idx]) > lam_diff * quantiles[1] * cmult[idx];
                     }
                 }
             }
@@ -486,13 +488,13 @@ public:
                         xv[idx] = std::pow(xs[idx], 2) * (X.col(k).cwiseProduct(X.col(k)) - 2 * xm[idx] * X.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                         ++num_violations;
                 } else if (penalty_type[idx] == 1) {
-                    if (std::abs(gradient[idx]) > penalty[0] * quantiles[idx] * cmult[idx]) {
+                    if (std::abs(gradient[idx]) > penalty[0] * quantiles[0] * cmult[idx]) {
                         strong_set[idx] = true;
                         xv[idx] = std::pow(xs[idx], 2) * (X.col(k).cwiseProduct(X.col(k)) - 2 * xm[idx] * X.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                         ++num_violations;
                     }
                 } else if (penalty_type[idx] == 2) {
-                    if (std::abs(gradient[idx] +  cmult[idx] * penalty[0] * (2 * quantiles[idx]  - 1)) > penalty[0] * cmult[idx]) {
+                    if (std::abs(gradient[idx] +  cmult[idx] * penalty[0] * (2 * quantiles[0]  - 1)) > penalty[0] * cmult[idx]) {
                         strong_set[idx] = true;
                         xv[idx] = std::pow(xs[idx], 2) * (X.col(k).cwiseProduct(X.col(k)) - 2 * xm[idx] * X.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                         ++num_violations;
@@ -502,6 +504,7 @@ public:
             }
         }
         idx += Fixed.cols();
+        // KKT check for external variables
         for (int k = 0; k < XZ.cols(); ++k, ++idx) {
             if (!strong_set[idx]) {
                 gradient[idx] = xs[idx] * (XZ.col(k).dot(residuals) - xm[idx] * resid_sum);
@@ -511,13 +514,13 @@ public:
                     xv[idx] = std::pow(xs[idx], 2) * (XZ.col(k).cwiseProduct(XZ.col(k)) - 2 * xm[idx] * XZ.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                     ++num_violations;
                 } else if (penalty_type[idx] == 1) {
-                    if (std::abs(gradient[idx]) > penalty[1] * quantiles[idx] * cmult[idx]) {
+                    if (std::abs(gradient[idx]) > penalty[1] * quantiles[1] * cmult[idx]) {
                         strong_set[idx] = true;
                         xv[idx] = std::pow(xs[idx], 2) * (XZ.col(k).cwiseProduct(XZ.col(k)) - 2 * xm[idx] * XZ.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                         ++num_violations;
                     }
                 } else if (penalty_type[idx] == 2) {
-                    if (std::abs(gradient[idx] +  cmult[idx] * penalty[1] * (2 * quantiles[idx]  - 1)) > penalty[1] * cmult[idx]) {
+                    if (std::abs(gradient[idx] +  cmult[idx] * penalty[1] * (2 * quantiles[1]  - 1)) > penalty[1] * cmult[idx]) {
                         strong_set[idx] = true;
                         xv[idx] = std::pow(xs[idx], 2) * (XZ.col(k).cwiseProduct(X.col(k)) - 2 * xm[idx] * XZ.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                         ++num_violations;

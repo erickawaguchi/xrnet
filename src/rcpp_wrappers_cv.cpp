@@ -107,7 +107,7 @@ Eigen::VectorXd fitModelCV(const TX & x,
         compute_penalty(
             path_ext, penalty_user_ext,
             penalty_type[nv_x + nv_fixed + intr[1]],
-                        quantiles[nv_x + nv_fixed + intr[1]],
+                        quantiles[1],
             penalty_ratio[1], solver->getGradient(),
             solver->getCmult(), nv_x + nv_fixed + intr[1],
             nv_total, solver->getYs()
