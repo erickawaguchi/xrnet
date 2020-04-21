@@ -263,9 +263,12 @@ public:
                             int & idx) {
         for (int k = 0; k < x.cols(); ++k, ++idx) {
             if (strong_set[idx]) {
-                double gk = xs[idx] * (x.col(k).dot(residuals) - xm[idx] * residuals.sum());
-                double bk = betas[idx];
-                double grad = gk + bk * xv[idx];
+                double gk     = xs[idx] * (x.col(k).dot(residuals) - xm[idx] * residuals.sum());
+                double bk     = betas[idx];
+                double grad   = gk + bk * xv[idx];
+                double lambda = cmult[idx] * lam;
+                // ESK: Change thresholding rule to allow sparse cases to be identified first
+                // copysign(a, b) = |a| * sign(b)
                 // Start penalty checks
                 if (penalty_type[idx] == 0) {
                     // No penalization
@@ -274,29 +277,62 @@ public:
                                                    grad / xv[idx]));
                 } else if (penalty_type[idx] == 1) {
                     // Elastic-Net regularization
-                    double grad_thresh = std::abs(grad) - cmult[idx] * quant * lam;
-                    if (grad_thresh > 0.0) {
+                    double grad_thresh = std::abs(grad) - quant * lambda;
+                    if (grad_thresh <= 0.0) {
+                        betas[idx] = 0.0;
+                    } else {
                         betas[idx] = std::max(lcl[idx],
                                               std::min(ucl[idx],
-                                                       copysign(grad_thresh, grad) / (xv[idx] + cmult[idx] * (1 - quant) * lam)));
+                                                       copysign(grad_thresh, grad) / (xv[idx] + lambda * (1 - quant))));
                     }
-                    else {
-                        betas[idx] = 0.0;
-                    }
+                    // End Elastic Net
                 } else if (penalty_type[idx] == 2) {
                     // Q1 regularization
-                    grad += cmult[idx] * lam * (2 * quant - 1);
-                    double grad_thresh = std::abs(grad) - cmult[idx] * lam;
-                    if (grad_thresh > 0.0) {
+                    grad += lambda * (2 * quant - 1);
+                    double grad_thresh = std::abs(grad) - lambda;
+                    if (grad_thresh <= 0.0) {
+                        betas[idx] = 0.0;
+                    } else {
                         betas[idx] = std::max(lcl[idx],
                                               std::min(ucl[idx],
                                                        copysign(grad_thresh, grad) / xv[idx]));
-                    }
-                    else {
+                        }
+                    // End Q1
+                } else if (penalty_type[idx] == 3) {
+                    // SCAD regularization
+                    double s = sgn(grad);
+                    if (std::abs(grad) <= lambda) {
                         betas[idx] = 0.0;
+                    } else if (std::abs(grad) <= 2 * lambda) {
+                        betas[idx] = std::max(lcl[idx],
+                                              std::min(ucl[idx],
+                                                       s * (std::abs(grad) - lambda)  / xv[idx]));
+                    } else if (std::abs(grad) <= gamm * lambda) {
+                        betas[idx] = std::max(lcl[idx],
+                                              std::min(ucl[idx],
+                                                       (gamm - 1) / (gamm - 2) * s * (std::abs(grad) - gamm * lambda / (gamm - 1))  / (xv[idx])));
+                    } else {
+                        betas[idx] = std::max(lcl[idx],
+                                              std::min(ucl[idx],
+                                                       grad / xv[idx]));
                     }
-                }
-                // End penalty checks
+                    // End SCAD
+                } else if (penalty_type[idx] == 4) {
+                    // MCP regularization
+                    double s = sgn(grad);
+                    if (std::abs(grad) <= lambda) {
+                        betas[idx] = 0.0;
+                    } else if (std::abs(grad) <= gamm * lambda) {
+                        betas[idx] = std::max(lcl[idx],
+                                              std::min(ucl[idx],
+                                                      (gamm / (gamm - 1)) *  s * (std::abs(grad) - lambda)  / xv[idx]));
+                    } else {
+                        betas[idx] = std::max(lcl[idx],
+                                              std::min(ucl[idx],
+                                                       grad / xv[idx]));
+                    }
+                    // End MCP
+                } // End penalty checks
                 if (betas[idx] != bk) {
                     double del = betas[idx] - bk;
                     if (!active_set[idx]) {
@@ -318,9 +354,10 @@ public:
                             int & idx) {
         for (int k = 0; k < x.cols(); ++k, ++idx) {
             if (active_set[idx]) {
-                double gk = xs[idx] * (x.col(k).dot(residuals) - xm[idx] * residuals.sum());
-                double bk = betas[idx];
-                double grad = gk + bk * xv[idx];
+                double gk     = xs[idx] * (x.col(k).dot(residuals) - xm[idx] * residuals.sum());
+                double bk     = betas[idx];
+                double grad   = gk + bk * xv[idx];
+                double lambda = cmult[idx] * lam;
                 // Start penalty checks
                 if (penalty_type[idx] == 0) {
                     // No penalization
@@ -329,30 +366,63 @@ public:
                                                    grad / xv[idx]));
                 } else if (penalty_type[idx] == 1) {
                     // Elastic-Net regularization
-                    double grad_thresh = std::abs(grad) - cmult[idx] * quant * lam;
-                    if (grad_thresh > 0.0) {
+                    double grad_thresh = std::abs(grad) - quant * lambda;
+                    if (grad_thresh <= 0.0) {
+                        betas[idx] = 0.0;
+                    } else {
                         betas[idx] = std::max(lcl[idx],
                                               std::min(ucl[idx],
-                                                       copysign(grad_thresh, grad) / (xv[idx] + cmult[idx] * (1 - quant) * lam)));
+                                                       copysign(grad_thresh, grad) / (xv[idx] + lambda * (1 - quant))));
                     }
-                    else {
-                        betas[idx] = 0.0;
-                    }
+                    // End Elastic Net
                 } else if (penalty_type[idx] == 2) {
                     // Q1 regularization
-                    grad += cmult[idx] * lam * (2 * quant - 1);
-                    double grad_thresh = std::abs(grad) - cmult[idx] * lam;
-                    if (grad_thresh > 0.0) {
+                    grad += lambda * (2 * quant - 1);
+                    double grad_thresh = std::abs(grad) - lambda;
+                    if (grad_thresh <= 0.0) {
+                        betas[idx] = 0.0;
+                    } else {
                         betas[idx] = std::max(lcl[idx],
                                               std::min(ucl[idx],
                                                        copysign(grad_thresh, grad) / xv[idx]));
                     }
-                    else {
+                    // End Q1
+                } else if (penalty_type[idx] == 3) {
+                    // SCAD regularization
+                    double s = sgn(grad);
+                    if (std::abs(grad) <= lambda) {
                         betas[idx] = 0.0;
+                    } else if (std::abs(grad) <= 2 * lambda) {
+                        betas[idx] = std::max(lcl[idx],
+                                              std::min(ucl[idx],
+                                                       s * (std::abs(grad) - lambda)  / xv[idx]));
+                    } else if (std::abs(grad) <= gamm * lambda) {
+                        betas[idx] = std::max(lcl[idx],
+                                              std::min(ucl[idx],
+                                                       (gamm - 1) / (gamm - 2) * s * (std::abs(grad) - gamm * lambda / (gamm - 1))  / (xv[idx])));
+                    } else {
+                        betas[idx] = std::max(lcl[idx],
+                                              std::min(ucl[idx],
+                                                       grad / xv[idx]));
                     }
+                    // End SCAD
+                 } else if (penalty_type[idx] == 4) {
+                // MCP regularization
+                double s = sgn(grad);
+                if (std::abs(grad) <= lambda) {
+                    betas[idx] = 0.0;
+                } else if (std::abs(grad) <= gamm * lambda) {
+                    betas[idx] = std::max(lcl[idx],
+                                          std::min(ucl[idx],
+                                                   (gamm / (gamm - 1)) *  s * (std::abs(grad) - lambda)  / xv[idx]));
+                } else {
+                    betas[idx] = std::max(lcl[idx],
+                                          std::min(ucl[idx],
+                                                   grad / xv[idx]));
                 }
-                // End penalty checks
-                if (betas[idx] != bk) {
+                // End MCP
+            } // End penalty checks
+                 if (betas[idx] != bk) {
                     double del = betas[idx] - bk;
                     residuals -= del * xs[idx] * (x.col(k) - xm[idx] * Eigen::VectorXd::Ones(n)).cwiseProduct(wgts);
                     dlx = std::max(dlx, xv[idx] * del * del);
@@ -429,7 +499,6 @@ public:
                        const int & m2) {
         int idx = 0;
         double penalty_old = (m == 0 || (m == 1 && path[m - 1] == bigNum)) ? 0.0 : path[m - 1];
-        double lam_diff = 2.0 * path[m] - penalty_old;
         // Penalty checks
         if (penalty_type[idx] == 0 | penalty_type[idx] == 2) {
             // Always update strong set
@@ -439,9 +508,26 @@ public:
                 }
             }
         } else if (penalty_type[idx] == 1) {
+            double lam_diff = 2.0 * path[m] - penalty_old;
             for (int k = 0; k < X.cols(); ++k, ++idx) {
                 if (!strong_set[idx]) {
                     strong_set[idx] = std::abs(gradient[idx]) > lam_diff * quantiles[0] * cmult[idx];
+                }
+            }
+        } else if (penalty_type[idx] == 3) {
+            // For SCAD and MCP see Lee and Breheny 2015
+            double lam_diff = path[m] + gamma[0] / (gamma[0] - 2) * (path[m] - penalty_old);
+            for (int k = 0; k < X.cols(); ++k, ++idx) {
+                if (!strong_set[idx]) {
+                    strong_set[idx] = std::abs(gradient[idx]) > lam_diff * cmult[idx];
+                }
+            }
+        } else if (penalty_type[idx] == 4) {
+            // For SCAD and MCP see Lee and Breheny 2015
+            double lam_diff = path[m] + gamma[0] / (gamma[0] - 1) * (path[m] - penalty_old);
+            for (int k = 0; k < X.cols(); ++k, ++idx) {
+                if (!strong_set[idx]) {
+                    strong_set[idx] = std::abs(gradient[idx]) > lam_diff * cmult[idx];
                 }
             }
         }
@@ -454,7 +540,6 @@ public:
                 std::fill(active_set.begin() + X.cols() + Fixed.cols(), active_set.end(), false);
             }
             penalty_old = (m2 == 0 || (m2 == 1 && path[m2 - 1] == bigNum)) ? 0.0 : path[m2 - 1];;
-            lam_diff = 2.0 * path_ext[m2] - penalty_old;
             // Penalty checks
             if (penalty_type[idx] == 0 | penalty_type[idx] == 2) {
                 // Always update strong set
@@ -464,9 +549,26 @@ public:
                     }
                 }
             } else if (penalty_type[idx] == 1) {
+                double lam_diff = 2.0 * path_ext[m2] - penalty_old;
                 for (int k = 0; k < XZ.cols(); ++k, ++idx) {
                     if (!strong_set[idx]) {
                         strong_set[idx] = std::abs(gradient[idx]) > lam_diff * quantiles[1] * cmult[idx];
+                    }
+                }
+            } else if (penalty_type[idx] == 3) {
+                // For SCAD and MCP see Lee and Breheny 2015
+                double lam_diff = path[m2] + gamma[1] / (gamma[1] - 2) * (path[m2] - penalty_old);
+                for (int k = 0; k < XZ.cols(); ++k, ++idx) {
+                    if (!strong_set[idx]) {
+                        strong_set[idx] = std::abs(gradient[idx]) > lam_diff * cmult[idx];
+                    }
+                }
+            } else if (penalty_type[idx] == 4) {
+                // For SCAD and MCP see Lee and Breheny 2015
+                double lam_diff = path[m2] + gamma[1] / (gamma[1] - 1) * (path[m2] - penalty_old);
+                for (int k = 0; k < XZ.cols(); ++k, ++idx) {
+                    if (!strong_set[idx]) {
+                        strong_set[idx] = std::abs(gradient[idx]) > lam_diff * cmult[idx];
                     }
                 }
             }
@@ -482,19 +584,26 @@ public:
         for (int k = 0; k < X.cols(); ++k, ++idx) {
             if (!strong_set[idx]) {
                 gradient[idx] = xs[idx] * (X.col(k).dot(residuals) - xm[idx] * resid_sum);
+                double lambda = penalty[0] * cmult[idx];
                 // Penalty checks
                 if (penalty_type[idx] == 0) {
                         strong_set[idx] = true;
                         xv[idx] = std::pow(xs[idx], 2) * (X.col(k).cwiseProduct(X.col(k)) - 2 * xm[idx] * X.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                         ++num_violations;
                 } else if (penalty_type[idx] == 1) {
-                    if (std::abs(gradient[idx]) > penalty[0] * quantiles[0] * cmult[idx]) {
+                    if (std::abs(gradient[idx]) > quantiles[0] * lambda) {
                         strong_set[idx] = true;
                         xv[idx] = std::pow(xs[idx], 2) * (X.col(k).cwiseProduct(X.col(k)) - 2 * xm[idx] * X.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                         ++num_violations;
                     }
                 } else if (penalty_type[idx] == 2) {
-                    if (std::abs(gradient[idx] +  cmult[idx] * penalty[0] * (2 * quantiles[0]  - 1)) > penalty[0] * cmult[idx]) {
+                    if (std::abs(gradient[idx] +  lambda * (2 * quantiles[0]  - 1)) > lambda) {
+                        strong_set[idx] = true;
+                        xv[idx] = std::pow(xs[idx], 2) * (X.col(k).cwiseProduct(X.col(k)) - 2 * xm[idx] * X.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
+                        ++num_violations;
+                    }
+                } else if (penalty_type[idx] == 3 || penalty_type[idx] == 4) {
+                    if (std::abs(gradient[idx]) > lambda) {
                         strong_set[idx] = true;
                         xv[idx] = std::pow(xs[idx], 2) * (X.col(k).cwiseProduct(X.col(k)) - 2 * xm[idx] * X.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                         ++num_violations;
@@ -508,21 +617,28 @@ public:
         for (int k = 0; k < XZ.cols(); ++k, ++idx) {
             if (!strong_set[idx]) {
                 gradient[idx] = xs[idx] * (XZ.col(k).dot(residuals) - xm[idx] * resid_sum);
+                double lambda = penalty[1] * cmult[idx];
                 // Penalty checks
                 if (penalty_type[idx] == 0) {
                     strong_set[idx] = true;
                     xv[idx] = std::pow(xs[idx], 2) * (XZ.col(k).cwiseProduct(XZ.col(k)) - 2 * xm[idx] * XZ.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                     ++num_violations;
                 } else if (penalty_type[idx] == 1) {
-                    if (std::abs(gradient[idx]) > penalty[1] * quantiles[1] * cmult[idx]) {
+                    if (std::abs(gradient[idx]) > quantiles[1] * lambda) {
                         strong_set[idx] = true;
                         xv[idx] = std::pow(xs[idx], 2) * (XZ.col(k).cwiseProduct(XZ.col(k)) - 2 * xm[idx] * XZ.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                         ++num_violations;
                     }
                 } else if (penalty_type[idx] == 2) {
-                    if (std::abs(gradient[idx] +  cmult[idx] * penalty[1] * (2 * quantiles[1]  - 1)) > penalty[1] * cmult[idx]) {
+                    if (std::abs(gradient[idx] +  lambda * (2 * quantiles[1]  - 1)) > lambda) {
                         strong_set[idx] = true;
                         xv[idx] = std::pow(xs[idx], 2) * (XZ.col(k).cwiseProduct(X.col(k)) - 2 * xm[idx] * XZ.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
+                        ++num_violations;
+                    }
+                } else if (penalty_type[idx] == 3 || penalty_type[idx] == 4) {
+                    if (std::abs(gradient[idx]) > lambda) {
+                        strong_set[idx] = true;
+                        xv[idx] = std::pow(xs[idx], 2) * (XZ.col(k).cwiseProduct(XZ.col(k)) - 2 * xm[idx] * XZ.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                         ++num_violations;
                     }
                 }

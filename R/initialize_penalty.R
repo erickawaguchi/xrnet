@@ -122,15 +122,5 @@ initialize_penalty <- function(penalty_main,
         )
     }
 
-    #penalty_obj$quantiles <- c(
-    #    penalty_obj$quantile,
-    #    penalty_obj$quantile_ext
-    #)
-
-    #penalty_obj$gammas <- c(
-    #    penalty_obj$gamma,
-    #    penalty_obj$gamma_ext
-    #)
-
     return(penalty_obj)
 }
