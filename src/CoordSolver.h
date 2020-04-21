@@ -253,11 +253,11 @@ public:
                 double gk = xs[idx] * (x.col(k).dot(residuals) - xm[idx] * residuals.sum());
                 double bk = betas[idx];
                 double grad = gk + bk * xv[idx];
-                double grad_thresh = std::abs(grad) - cmult[idx] * penalty_type[idx] * lam;
+                double grad_thresh = std::abs(grad) - cmult[idx] * quantiles[idx] * lam;
                 if (grad_thresh > 0.0) {
                     betas[idx] = std::max(lcl[idx],
                                           std::min(ucl[idx],
-                                          copysign(grad_thresh, grad) / (xv[idx] + cmult[idx] * (1 - penalty_type[idx]) * lam)));
+                                          copysign(grad_thresh, grad) / (xv[idx] + cmult[idx] * (1 - quantiles[idx]) * lam)));
                 }
                 else {
                     betas[idx] = 0.0;
@@ -282,11 +282,11 @@ public:
                 double gk = xs[idx] * (x.col(k).dot(residuals) - xm[idx] * residuals.sum());
                 double bk = betas[idx];
                 double grad = gk + bk * xv[idx];
-                double grad_thresh = std::abs(grad) - cmult[idx] * penalty_type[idx] * lam;
+                double grad_thresh = std::abs(grad) - cmult[idx] * quantiles[idx] * lam;
                 if (grad_thresh > 0.0) {
                     betas[idx] = std::max(lcl[idx],
                                           std::min(ucl[idx],
-                                          copysign(grad_thresh, grad) / (xv[idx] + cmult[idx] * (1 - penalty_type[idx]) * lam)));
+                                          copysign(grad_thresh, grad) / (xv[idx] + cmult[idx] * (1 - quantiles[idx]) * lam)));
                 }
                 else {
                     betas[idx] = 0.0;
@@ -371,7 +371,7 @@ public:
         double lam_diff = 2.0 * path[m] - penalty_old;
         for (int k = 0; k < X.cols(); ++k, ++idx) {
             if (!strong_set[idx]) {
-                strong_set[idx] = std::abs(gradient[idx]) > lam_diff * penalty_type[idx] * cmult[idx];
+                strong_set[idx] = std::abs(gradient[idx]) > lam_diff * quantiles[idx] * cmult[idx];
             }
         }
         idx += Fixed.cols();
@@ -384,7 +384,7 @@ public:
             lam_diff = 2.0 * path_ext[m2] - penalty_old;
             for (int k = 0; k < XZ.cols(); ++k, ++idx) {
                 if (!strong_set[idx]) {
-                    strong_set[idx] = std::abs(gradient[idx]) > lam_diff * penalty_type[idx] * cmult[idx];
+                    strong_set[idx] = std::abs(gradient[idx]) > lam_diff * quantiles[idx] * cmult[idx];
                 }
             }
         }
@@ -398,7 +398,7 @@ public:
         for (int k = 0; k < X.cols(); ++k, ++idx) {
             if (!strong_set[idx]) {
                 gradient[idx] = xs[idx] * (X.col(k).dot(residuals) - xm[idx] * resid_sum);
-                if (std::abs(gradient[idx]) > penalty[0] * penalty_type[idx] * cmult[idx]) {
+                if (std::abs(gradient[idx]) > penalty[0] * quantiles[idx] * cmult[idx]) {
                     strong_set[idx] = true;
                     xv[idx] = std::pow(xs[idx], 2) * (X.col(k).cwiseProduct(X.col(k)) - 2 * xm[idx] * X.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                     ++num_violations;
@@ -409,7 +409,7 @@ public:
         for (int k = 0; k < XZ.cols(); ++k, ++idx) {
             if (!strong_set[idx]) {
                 gradient[idx] = xs[idx] * (XZ.col(k).dot(residuals) - xm[idx] * resid_sum);
-                if (std::abs(gradient[idx]) > penalty[1] * penalty_type[idx] * cmult[idx]) {
+                if (std::abs(gradient[idx]) > penalty[1] * quantiles[idx] * cmult[idx]) {
                     strong_set[idx] = true;
                     xv[idx] = std::pow(xs[idx], 2) * (XZ.col(k).cwiseProduct(XZ.col(k)) - 2 * xm[idx] * XZ.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                     ++num_violations;

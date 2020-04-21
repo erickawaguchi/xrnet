@@ -7,6 +7,7 @@ typedef Eigen::MappedSparseMatrix<double> MapSpMat;
 void compute_penalty(Eigen::Ref<Eigen::VectorXd> path,
                      const Eigen::Ref<const Eigen::VectorXd> & penalty_user,
                      const double & penalty_type,
+                     const double & quantile,
                      const double & penalty_ratio,
                      const Eigen::Ref<const Eigen::VectorXd> & gradient,
                      const Eigen::Ref<const Eigen::VectorXd> & cmult,
@@ -27,7 +28,7 @@ void compute_penalty(Eigen::Ref<Eigen::VectorXd> path,
         }
         double eqs = std::max(minPenaltyRatio, penalty_ratio);
         double alf = pow(eqs, 1.0 / (npenalty - 1));
-        path[1] = alf * (max_penalty / std::max(penalty_type, maxInflationFactor));
+        path[1] = alf * (max_penalty / std::max(quantile, maxInflationFactor));
         for (int l = 2; l < npenalty; ++l) {
             path[l] = alf * path[l - 1];
         }

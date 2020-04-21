@@ -137,7 +137,7 @@ define_ridge <- function(num_penalty = 20,
                          custom_multiplier = NULL) {
 
     define_penalty(
-        penalty_type = 1,
+        penalty_type = 0,
         quantile = 0,
         num_penalty = num_penalty,
         penalty_ratio = penalty_ratio,
@@ -172,7 +172,7 @@ define_enet <- function(en_param = 0.5,
                         custom_multiplier = NULL) {
 
     define_penalty(
-        penalty_type = 1,
+        penalty_type = en_param,
         quantile = en_param,
         num_penalty = num_penalty,
         penalty_ratio = penalty_ratio,

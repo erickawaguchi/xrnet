@@ -7,6 +7,7 @@
 void compute_penalty(Eigen::Ref<Eigen::VectorXd> path,
                      const Eigen::Ref<const Eigen::VectorXd> & penalty_user,
                      const double & penalty_type,
+                     const double & quantile,
                      const double & penalty_ratio,
                      const Eigen::Ref<const Eigen::VectorXd> & gradient,
                      const Eigen::Ref<const Eigen::VectorXd> & cmult,
