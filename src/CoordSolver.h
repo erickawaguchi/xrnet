@@ -3,6 +3,7 @@
 
 #include <RcppEigen.h>
 #include "DataFunctions.h"
+#include "XrnetUtils.h"
 #include <bigmemory/MatrixAccessor.hpp>
 // [[Rcpp::depends(RcppEigen, BH, bigmemory)]]
 
@@ -226,18 +227,18 @@ public:
         while (num_passes < max_iterations) {
             dlx = 0.0;
             int idx = 0;
-            update_beta_screen(X, penalty[0], idx);
-            update_beta_screen(Fixed, penalty[0], idx);
-            update_beta_screen(XZ, penalty[1], idx);
+            update_beta_screen(X, penalty[0], penalty_type[0], idx);
+            update_beta_screen(Fixed, penalty[0], 0.0, idx);
+            update_beta_screen(XZ, penalty[1], penalty_type[1], idx);
             if (intercept) update_intercept();
             ++num_passes;
             if (dlx < tolerance) break;
             while (num_passes < max_iterations) {
                 dlx = 0.0;
                 idx = 0;
-                update_beta_active(X, penalty[0], idx);
-                update_beta_active(Fixed, penalty[0], idx);
-                update_beta_active(XZ, penalty[1], idx);
+                update_beta_active(X, penalty[0], penalty_type[0], idx);
+                update_beta_active(Fixed, penalty[0], 0.0, idx);
+                update_beta_active(XZ, penalty[1], penalty_type[1], idx);
                 if (intercept) update_intercept();
                 ++num_passes;
                 if (dlx < tolerance) break;
@@ -247,21 +248,34 @@ public:
 
     // coordinatewise update of features in strong set
     template <typename matType>
-    void update_beta_screen(const matType & x, const double & lam, int & idx) {
+    void update_beta_screen(const matType & x,
+                            const double & lam,
+                            const double & ptype,
+                            int & idx) {
         for (int k = 0; k < x.cols(); ++k, ++idx) {
             if (strong_set[idx]) {
                 double gk = xs[idx] * (x.col(k).dot(residuals) - xm[idx] * residuals.sum());
                 double bk = betas[idx];
                 double grad = gk + bk * xv[idx];
-                double grad_thresh = std::abs(grad) - cmult[idx] * quantiles[idx] * lam;
-                if (grad_thresh > 0.0) {
+                // Start penalty checks
+                if (penalty_type[idx] == 0) {
+                    // No penalization
                     betas[idx] = std::max(lcl[idx],
                                           std::min(ucl[idx],
-                                          copysign(grad_thresh, grad) / (xv[idx] + cmult[idx] * (1 - quantiles[idx]) * lam)));
+                                                   grad / xv[idx]));
+                } else if (penalty_type[idx] == 1) {
+                    // Elastic-Net regularization
+                    double grad_thresh = std::abs(grad) - cmult[idx] * quantiles[idx] * lam;
+                    if (grad_thresh > 0.0) {
+                        betas[idx] = std::max(lcl[idx],
+                                              std::min(ucl[idx],
+                                                       copysign(grad_thresh, grad) / (xv[idx] + cmult[idx] * (1 - quantiles[idx]) * lam)));
+                    }
+                    else {
+                        betas[idx] = 0.0;
+                    }
                 }
-                else {
-                    betas[idx] = 0.0;
-                }
+                // End penalty checks
                 if (betas[idx] != bk) {
                     double del = betas[idx] - bk;
                     if (!active_set[idx]) {
@@ -276,21 +290,34 @@ public:
 
     // coordinatewise update of features in active set
     template <typename matType>
-    void update_beta_active(const matType & x, const double & lam, int & idx) {
+    void update_beta_active(const matType & x,
+                            const double & lam,
+                            const double & ptype,
+                            int & idx) {
         for (int k = 0; k < x.cols(); ++k, ++idx) {
             if (active_set[idx]) {
                 double gk = xs[idx] * (x.col(k).dot(residuals) - xm[idx] * residuals.sum());
                 double bk = betas[idx];
                 double grad = gk + bk * xv[idx];
-                double grad_thresh = std::abs(grad) - cmult[idx] * quantiles[idx] * lam;
-                if (grad_thresh > 0.0) {
+                // Start penalty checks
+                if (penalty_type[idx] == 0) {
+                    // No penalization
                     betas[idx] = std::max(lcl[idx],
                                           std::min(ucl[idx],
-                                          copysign(grad_thresh, grad) / (xv[idx] + cmult[idx] * (1 - quantiles[idx]) * lam)));
+                                                   grad / xv[idx]));
+                } else if (penalty_type[idx] == 1) {
+                    // Elastic-Net regularization
+                    double grad_thresh = std::abs(grad) - cmult[idx] * quantiles[idx] * lam;
+                    if (grad_thresh > 0.0) {
+                        betas[idx] = std::max(lcl[idx],
+                                              std::min(ucl[idx],
+                                                       copysign(grad_thresh, grad) / (xv[idx] + cmult[idx] * (1 - quantiles[idx]) * lam)));
+                    }
+                    else {
+                        betas[idx] = 0.0;
+                    }
                 }
-                else {
-                    betas[idx] = 0.0;
-                }
+                // End penalty checks
                 if (betas[idx] != bk) {
                     double del = betas[idx] - bk;
                     residuals -= del * xs[idx] * (x.col(k) - xm[idx] * Eigen::VectorXd::Ones(n)).cwiseProduct(wgts);
@@ -369,11 +396,22 @@ public:
         int idx = 0;
         double penalty_old = (m == 0 || (m == 1 && path[m - 1] == bigNum)) ? 0.0 : path[m - 1];
         double lam_diff = 2.0 * path[m] - penalty_old;
-        for (int k = 0; k < X.cols(); ++k, ++idx) {
-            if (!strong_set[idx]) {
-                strong_set[idx] = std::abs(gradient[idx]) > lam_diff * quantiles[idx] * cmult[idx];
+        // Penalty checks
+        if (penalty_type[idx] == 0 | penalty_type[idx] == 2) {
+            // Always update strong set
+            for (int k = 0; k < X.cols(); ++k, ++idx) {
+                if (!strong_set[idx]) {
+                    strong_set[idx] = std::abs(gradient[idx]) > 0;
+                }
+            }
+        } else if (penalty_type[idx] == 1) {
+            for (int k = 0; k < X.cols(); ++k, ++idx) {
+                if (!strong_set[idx]) {
+                    strong_set[idx] = std::abs(gradient[idx]) > lam_diff * quantiles[idx] * cmult[idx];
+                }
             }
         }
+        // End penalty checks
         idx += Fixed.cols();
         if (XZ.cols() > 0) {
             if (m2 == 0) {
@@ -382,11 +420,22 @@ public:
             }
             penalty_old = (m2 == 0 || (m2 == 1 && path[m2 - 1] == bigNum)) ? 0.0 : path[m2 - 1];;
             lam_diff = 2.0 * path_ext[m2] - penalty_old;
-            for (int k = 0; k < XZ.cols(); ++k, ++idx) {
-                if (!strong_set[idx]) {
-                    strong_set[idx] = std::abs(gradient[idx]) > lam_diff * quantiles[idx] * cmult[idx];
+            // Penalty checks
+            if (penalty_type[idx] == 0 | penalty_type[idx] == 2) {
+                // Always update strong set
+                for (int k = 0; k < XZ.cols(); ++k, ++idx) {
+                    if (!strong_set[idx]) {
+                        strong_set[idx] = std::abs(gradient[idx]) > 0;
+                    }
+                }
+            } else if (penalty_type[idx] == 1) {
+                for (int k = 0; k < XZ.cols(); ++k, ++idx) {
+                    if (!strong_set[idx]) {
+                        strong_set[idx] = std::abs(gradient[idx]) > lam_diff * quantiles[idx] * cmult[idx];
+                    }
                 }
             }
+            // End penalty checks
         }
     }
 
@@ -398,22 +447,38 @@ public:
         for (int k = 0; k < X.cols(); ++k, ++idx) {
             if (!strong_set[idx]) {
                 gradient[idx] = xs[idx] * (X.col(k).dot(residuals) - xm[idx] * resid_sum);
-                if (std::abs(gradient[idx]) > penalty[0] * quantiles[idx] * cmult[idx]) {
-                    strong_set[idx] = true;
-                    xv[idx] = std::pow(xs[idx], 2) * (X.col(k).cwiseProduct(X.col(k)) - 2 * xm[idx] * X.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
-                    ++num_violations;
+                // Penalty checks
+                if (penalty_type[idx] == 0) {
+                        strong_set[idx] = true;
+                        xv[idx] = std::pow(xs[idx], 2) * (X.col(k).cwiseProduct(X.col(k)) - 2 * xm[idx] * X.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
+                        ++num_violations;
+                } else if (penalty_type[idx] == 1) {
+                    if (std::abs(gradient[idx]) > penalty[0] * quantiles[idx] * cmult[idx]) {
+                        strong_set[idx] = true;
+                        xv[idx] = std::pow(xs[idx], 2) * (X.col(k).cwiseProduct(X.col(k)) - 2 * xm[idx] * X.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
+                        ++num_violations;
+                    }
                 }
+               // End penalty
             }
         }
         idx += Fixed.cols();
         for (int k = 0; k < XZ.cols(); ++k, ++idx) {
             if (!strong_set[idx]) {
                 gradient[idx] = xs[idx] * (XZ.col(k).dot(residuals) - xm[idx] * resid_sum);
-                if (std::abs(gradient[idx]) > penalty[1] * quantiles[idx] * cmult[idx]) {
+                // Penalty checks
+                if (penalty_type[idx] == 0) {
                     strong_set[idx] = true;
                     xv[idx] = std::pow(xs[idx], 2) * (XZ.col(k).cwiseProduct(XZ.col(k)) - 2 * xm[idx] * XZ.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                     ++num_violations;
+                } else if (penalty_type[idx] == 1) {
+                    if (std::abs(gradient[idx]) > penalty[1] * quantiles[idx] * cmult[idx]) {
+                        strong_set[idx] = true;
+                        xv[idx] = std::pow(xs[idx], 2) * (XZ.col(k).cwiseProduct(XZ.col(k)) - 2 * xm[idx] * XZ.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
+                        ++num_violations;
+                    }
                 }
+                // End penalty
             }
         }
         return num_violations == 0;
