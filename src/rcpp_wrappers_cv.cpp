@@ -18,6 +18,7 @@ Eigen::VectorXd fitModelCV(const TX & x,
                            const Eigen::Ref<const Eigen::VectorXd> & penalty_type,
                            const Eigen::Ref<const Eigen::VectorXd> & cmult,
                            const Eigen::Ref<const Eigen::VectorXd> & quantiles,
+                           const Eigen::Ref<const Eigen::VectorXd> & gamma,
                            const Rcpp::IntegerVector & num_penalty,
                            const Rcpp::NumericVector & penalty_ratio,
                            const Eigen::Ref<const Eigen::VectorXd> & penalty_user,
@@ -33,15 +34,15 @@ Eigen::VectorXd fitModelCV(const TX & x,
                            const int & nx) {
 
     // initialize objects to hold means, variances, sds of all variables
-    const int n = x.rows();
-    const int nv_x = x.cols();
-    const int nv_fixed = fixed.size() == 0 ? 0 : fixed.cols();
-    const int nv_ext = ext.size() == 0 ? 0 : ext.cols();
-    const int nv_total = nv_x + nv_fixed + intr[1] + nv_ext;
-    Eigen::VectorXd xm = Eigen::VectorXd::Constant(nv_total, 0.0);
+    const int n          = x.rows();
+    const int nv_x       = x.cols();
+    const int nv_fixed   = fixed.size() == 0 ? 0 : fixed.cols();
+    const int nv_ext     = ext.size() == 0 ? 0 : ext.cols();
+    const int nv_total   = nv_x + nv_fixed + intr[1] + nv_ext;
+    Eigen::VectorXd xm   = Eigen::VectorXd::Constant(nv_total, 0.0);
     Eigen::VectorXd cent = Eigen::VectorXd::Constant(nv_total, 0.0);
-    Eigen::VectorXd xv = Eigen::VectorXd::Constant(nv_total, 1.0);
-    Eigen::VectorXd xs = Eigen::VectorXd::Constant(nv_total, 1.0);
+    Eigen::VectorXd xv   = Eigen::VectorXd::Constant(nv_total, 1.0);
+    Eigen::VectorXd xs   = Eigen::VectorXd::Constant(nv_total, 1.0);
 
     // map to correct size of fixed matrix
     Eigen::Map<const Eigen::MatrixXd> fixedmap(fixed.data(), fixed.rows(), nv_fixed);
@@ -65,7 +66,7 @@ Eigen::VectorXd fitModelCV(const TX & x,
             new GaussianSolver<TX>(
                     y, x, fixedmap, xz, cent.data(), xv.data(), xs.data(),
                     weights_user, intr[0], penalty_type.data(),
-                    cmult.data(), quantiles.data(), upper_cl.data(),
+                    cmult.data(), quantiles.data(), gamma.data(), upper_cl.data(),
                     lower_cl.data(), ne, nx, thresh, maxit
             )
         );
@@ -76,7 +77,7 @@ Eigen::VectorXd fitModelCV(const TX & x,
             new BinomialSolver<TX>(
                     y, x, fixedmap, xz, cent.data(), xv.data(),
                     xs.data(), weights_user, intr[0], penalty_type.data(),
-                    cmult.data(), quantiles.data(), upper_cl.data(),
+                    cmult.data(), quantiles.data(),  gamma.data(), upper_cl.data(),
                     lower_cl.data(), ne, nx, thresh, maxit
             )
         );
@@ -157,6 +158,7 @@ Eigen::VectorXd fitModelCVRcpp(SEXP x,
                                const Eigen::Map<Eigen::VectorXd> penalty_type,
                                const Eigen::Map<Eigen::VectorXd> cmult,
                                const Eigen::Map<Eigen::VectorXd> quantiles,
+                               const Eigen::Map<Eigen::VectorXd> gamma,
                                const Rcpp::IntegerVector & num_penalty,
                                const Rcpp::NumericVector & penalty_ratio,
                                const Eigen::Map<Eigen::VectorXd> penalty_user,
@@ -179,7 +181,7 @@ Eigen::VectorXd fitModelCVRcpp(SEXP x,
             return fitModelCV<MapMat, MapSpMat>(
                     xmap, is_sparse_x, y, Rcpp::as<MapSpMat>(ext),
                     fixed, weights_user, intr, stnd, penalty_type,
-                    cmult, quantiles, num_penalty, penalty_ratio,
+                    cmult, quantiles, gamma, num_penalty, penalty_ratio,
                     penalty_user, penalty_user_ext, lower_cl,
                     upper_cl, family, user_loss, test_idx, thresh,
                     maxit, ne, nx
@@ -190,7 +192,7 @@ Eigen::VectorXd fitModelCVRcpp(SEXP x,
             return fitModelCV<MapMat, MapMat>(
                     xmap, is_sparse_x, y, extmap, fixed,
                     weights_user, intr, stnd, penalty_type,
-                    cmult, quantiles, num_penalty, penalty_ratio,
+                    cmult, quantiles, gamma, num_penalty, penalty_ratio,
                     penalty_user, penalty_user_ext, lower_cl,
                     upper_cl, family, user_loss, test_idx,
                     thresh, maxit, ne, nx
@@ -205,7 +207,7 @@ Eigen::VectorXd fitModelCVRcpp(SEXP x,
             return fitModelCV<MapMat, MapSpMat>(
                     xmap, is_sparse_x, y, Rcpp::as<MapSpMat>(ext), fixed,
                     weights_user, intr, stnd, penalty_type,
-                    cmult, quantiles, num_penalty, penalty_ratio,
+                    cmult, quantiles, gamma, num_penalty, penalty_ratio,
                     penalty_user, penalty_user_ext, lower_cl,
                     upper_cl, family, user_loss, test_idx,
                     thresh, maxit, ne, nx
@@ -217,7 +219,7 @@ Eigen::VectorXd fitModelCVRcpp(SEXP x,
             return fitModelCV<MapMat, MapMat>(
                     xmap, is_sparse_x, y, extmap, fixed, weights_user,
                     intr, stnd, penalty_type, cmult,
-                    quantiles, num_penalty, penalty_ratio,
+                    quantiles, gamma, num_penalty, penalty_ratio,
                     penalty_user, penalty_user_ext, lower_cl,
                     upper_cl, family, user_loss, test_idx,
                     thresh, maxit, ne, nx
@@ -229,7 +231,7 @@ Eigen::VectorXd fitModelCVRcpp(SEXP x,
             return fitModelCV<MapSpMat, MapSpMat>(
                     Rcpp::as<MapSpMat>(x), is_sparse_x, y, Rcpp::as<MapSpMat>(ext), fixed,
                     weights_user, intr, stnd, penalty_type,
-                    cmult, quantiles, num_penalty, penalty_ratio,
+                    cmult, quantiles, gamma, num_penalty, penalty_ratio,
                     penalty_user, penalty_user_ext, lower_cl,
                     upper_cl, family, user_loss, test_idx,
                     thresh, maxit, ne, nx
@@ -241,7 +243,7 @@ Eigen::VectorXd fitModelCVRcpp(SEXP x,
             return fitModelCV<MapSpMat, MapMat>(
                     Rcpp::as<MapSpMat>(x), is_sparse_x, y, extmap,
                     fixed, weights_user, intr, stnd, penalty_type, cmult,
-                    quantiles, num_penalty, penalty_ratio,
+                    quantiles, gamma, num_penalty, penalty_ratio,
                     penalty_user, penalty_user_ext, lower_cl,
                     upper_cl, family, user_loss, test_idx,
                     thresh, maxit, ne, nx

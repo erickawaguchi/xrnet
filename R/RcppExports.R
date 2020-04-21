@@ -5,11 +5,11 @@ computeResponseRcpp <- function(X, mattype_x, Fixed, beta0, betas, gammas, respo
     .Call(`_xrnet_computeResponseRcpp`, X, mattype_x, Fixed, beta0, betas, gammas, response_type, family)
 }
 
-fitModelCVRcpp <- function(x, mattype_x, y, ext, is_sparse_ext, fixed, weights_user, intr, stnd, penalty_type, cmult, quantiles, num_penalty, penalty_ratio, penalty_user, penalty_user_ext, lower_cl, upper_cl, family, user_loss, test_idx, thresh, maxit, ne, nx) {
-    .Call(`_xrnet_fitModelCVRcpp`, x, mattype_x, y, ext, is_sparse_ext, fixed, weights_user, intr, stnd, penalty_type, cmult, quantiles, num_penalty, penalty_ratio, penalty_user, penalty_user_ext, lower_cl, upper_cl, family, user_loss, test_idx, thresh, maxit, ne, nx)
+fitModelCVRcpp <- function(x, mattype_x, y, ext, is_sparse_ext, fixed, weights_user, intr, stnd, penalty_type, cmult, quantiles, gamma, num_penalty, penalty_ratio, penalty_user, penalty_user_ext, lower_cl, upper_cl, family, user_loss, test_idx, thresh, maxit, ne, nx) {
+    .Call(`_xrnet_fitModelCVRcpp`, x, mattype_x, y, ext, is_sparse_ext, fixed, weights_user, intr, stnd, penalty_type, cmult, quantiles, gamma, num_penalty, penalty_ratio, penalty_user, penalty_user_ext, lower_cl, upper_cl, family, user_loss, test_idx, thresh, maxit, ne, nx)
 }
 
-fitModelRcpp <- function(x, mattype_x, y, ext, is_sparse_ext, fixed, weights_user, intr, stnd, penalty_type, cmult, quantiles, num_penalty, penalty_ratio, penalty_user, penalty_user_ext, lower_cl, upper_cl, family, thresh, maxit, ne, nx) {
-    .Call(`_xrnet_fitModelRcpp`, x, mattype_x, y, ext, is_sparse_ext, fixed, weights_user, intr, stnd, penalty_type, cmult, quantiles, num_penalty, penalty_ratio, penalty_user, penalty_user_ext, lower_cl, upper_cl, family, thresh, maxit, ne, nx)
+fitModelRcpp <- function(x, mattype_x, y, ext, is_sparse_ext, fixed, weights_user, intr, stnd, penalty_type, cmult, quantiles, gamma, num_penalty, penalty_ratio, penalty_user, penalty_user_ext, lower_cl, upper_cl, family, thresh, maxit, ne, nx) {
+    .Call(`_xrnet_fitModelRcpp`, x, mattype_x, y, ext, is_sparse_ext, fixed, weights_user, intr, stnd, penalty_type, cmult, quantiles, gamma, num_penalty, penalty_ratio, penalty_user, penalty_user_ext, lower_cl, upper_cl, family, thresh, maxit, ne, nx)
 }
 

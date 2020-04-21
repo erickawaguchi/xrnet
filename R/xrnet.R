@@ -247,8 +247,6 @@ xrnet <- function(x,
         nc_ext           = nc_ext,
         intercept        = intercept
     )
-    #ESK: Quantile check
-    #print(penalty$quantiles)
 
     # check control object
     control <- do.call("xrnet.control", control)
@@ -274,6 +272,7 @@ xrnet <- function(x,
         penalty_type     = penalty$ptype,
         cmult            = penalty$cmult,
         quantiles        = penalty$quantiles,
+        gamma            = c(0, 0, 0), #ESK: Test
         num_penalty      = c(penalty$num_penalty, penalty$num_penalty_ext),
         penalty_ratio    = c(penalty$penalty_ratio, penalty$penalty_ratio_ext),
         penalty_user     = penalty$user_penalty,

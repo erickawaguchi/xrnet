@@ -7,9 +7,10 @@ initialize_penalty <- function(penalty_main,
                                nc_ext,
                                intercept) {
 
-    names(penalty_external) <- c(
+   names(penalty_external) <- c(
         "penalty_type_ext",
         "quantile_ext",
+        "gamma_ext",
         "num_penalty_ext",
         "penalty_ratio_ext",
         "user_penalty_ext",
@@ -17,20 +18,7 @@ initialize_penalty <- function(penalty_main,
     )
 
     penalty_obj <- c(penalty_main, penalty_external)
-
-    # check penalty object for x
-    #if (length(penalty_obj$penalty_type) > 1) {
-    #    if (length(penalty_obj$penalty_type) != nc_x) {
-    #        stop(
-    #            "Length of penalty_type (",
-    #            length(penalty_obj$penalty_type),
-    #            ") not equal to number of columns in x (",
-    #            nc_x,")"
-    #        )
-    #    }
-    #} else {
     penalty_obj$penalty_type <- rep(penalty_obj$penalty_type, nc_x)
-    #}
 
     # ESK: Add quantiles
     penalty_obj$quantile <- rep(penalty_obj$quantile, nc_x)
@@ -66,19 +54,7 @@ initialize_penalty <- function(penalty_main,
 
     # check penalty object for external
     if (nc_ext > 0) {
-        #if (length(penalty_obj$penalty_type_ext) > 1) {
-        #    if (length(penalty_obj$penalty_type_ext) != nc_ext) {
-        #        stop(
-        #            "Length of penalty_type_ext (",
-        #            length(penalty_obj$penalty_type_ext),
-        #            ") not equal to number of columns in external (",
-        #            nc_ext,
-        #            ")"
-        #        )
-        #    }
-        #} else {
         penalty_obj$penalty_type_ext <- rep(penalty_obj$penalty_type_ext, nc_ext)
-        #}
 
         # ESK: Add quantiles
         penalty_obj$quantile_ext <- rep(penalty_obj$quantile_ext, nc_ext)

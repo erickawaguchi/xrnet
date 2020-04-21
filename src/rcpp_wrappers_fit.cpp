@@ -18,6 +18,7 @@ Rcpp::List fitModel(const TX & x,
                     const Eigen::Ref<const Eigen::VectorXd> & penalty_type,
                     const Eigen::Ref<const Eigen::VectorXd> & cmult,
                     const Eigen::Ref<const Eigen::VectorXd> & quantiles,
+                    const Eigen::Ref<const Eigen::VectorXd> & gamma,
                     const Rcpp::IntegerVector & num_penalty,
                     const Rcpp::NumericVector & penalty_ratio,
                     const Eigen::Ref<const Eigen::VectorXd> & penalty_user,
@@ -31,15 +32,15 @@ Rcpp::List fitModel(const TX & x,
                     const int & nx) {
 
     // initialize objects to hold means, variances, sds of all variables
-    const int n = x.rows();
-    const int nv_x = x.cols();
-    const int nv_fixed = fixed.size() == 0 ? 0 : fixed.cols();
-    const int nv_ext = ext.size() == 0 ? 0 : ext.cols();
-    const int nv_total = nv_x + nv_fixed + intr[1] + nv_ext;
-    Eigen::VectorXd xm = Eigen::VectorXd::Constant(nv_total, 0.0);
+    const int n          = x.rows();
+    const int nv_x       = x.cols();
+    const int nv_fixed   = fixed.size() == 0 ? 0 : fixed.cols();
+    const int nv_ext     = ext.size() == 0 ? 0 : ext.cols();
+    const int nv_total   = nv_x + nv_fixed + intr[1] + nv_ext;
+    Eigen::VectorXd xm   = Eigen::VectorXd::Constant(nv_total, 0.0);
     Eigen::VectorXd cent = Eigen::VectorXd::Constant(nv_total, 0.0);
-    Eigen::VectorXd xv = Eigen::VectorXd::Constant(nv_total, 1.0);
-    Eigen::VectorXd xs = Eigen::VectorXd::Constant(nv_total, 1.0);
+    Eigen::VectorXd xv   = Eigen::VectorXd::Constant(nv_total, 1.0);
+    Eigen::VectorXd xs   = Eigen::VectorXd::Constant(nv_total, 1.0);
 
     // map to correct size of fixed matrix
     Eigen::Map<const Eigen::MatrixXd> fixedmap(fixed.data(), fixed.rows(), nv_fixed);
@@ -63,7 +64,7 @@ Rcpp::List fitModel(const TX & x,
             new GaussianSolver<TX>(
                 y, x, fixedmap, xz, cent.data(), xv.data(), xs.data(),
                 weights_user, intr[0], penalty_type.data(),
-                cmult.data(), quantiles.data(), upper_cl.data(),
+                cmult.data(), quantiles.data(), gamma.data(), upper_cl.data(),
                 lower_cl.data(), ne, nx, thresh, maxit
             )
         );
@@ -74,7 +75,7 @@ Rcpp::List fitModel(const TX & x,
             new BinomialSolver<TX>(
                 y, x, fixedmap, xz, cent.data(), xv.data(),
                 xs.data(), weights_user, intr[0], penalty_type.data(),
-                cmult.data(), quantiles.data(), upper_cl.data(),
+                cmult.data(), quantiles.data(), gamma.data(), upper_cl.data(),
                 lower_cl.data(), ne, nx, thresh, maxit
             )
         );
@@ -104,7 +105,7 @@ Rcpp::List fitModel(const TX & x,
         compute_penalty(
             path_ext, penalty_user_ext,
             penalty_type[nv_x + nv_fixed + intr[1]],
-                        quantiles[nv_x + nv_fixed + intr[1]],
+            quantiles[nv_x + nv_fixed + intr[1]],
             penalty_ratio[1], solver->getGradient(),
             solver->getCmult(), nv_x + nv_fixed + intr[1],
             nv_total, solver->getYs()
@@ -174,6 +175,7 @@ Rcpp::List fitModelRcpp(SEXP x,
                         const Eigen::Map<Eigen::VectorXd> penalty_type,
                         const Eigen::Map<Eigen::VectorXd> cmult,
                         const Eigen::Map<Eigen::VectorXd> quantiles,
+                        const Eigen::Map<Eigen::VectorXd> gamma,
                         const Rcpp::IntegerVector & num_penalty,
                         const Rcpp::NumericVector & penalty_ratio,
                         const Eigen::Map<Eigen::VectorXd> penalty_user,
@@ -194,7 +196,7 @@ Rcpp::List fitModelRcpp(SEXP x,
             return fitModel<MapMat, MapSpMat>(
                     xmap, is_sparse_x, y, Rcpp::as<MapSpMat>(ext),
                     fixed, weights_user, intr, stnd, penalty_type, cmult,
-                    quantiles, num_penalty, penalty_ratio, penalty_user,
+                    quantiles, gamma, num_penalty, penalty_ratio, penalty_user,
                     penalty_user_ext, lower_cl, upper_cl, family, thresh,
                     maxit, ne, nx
                 );
@@ -203,7 +205,7 @@ Rcpp::List fitModelRcpp(SEXP x,
             MapMat extmap((const double *) &ext_mat[0], ext_mat.rows(), ext_mat.cols());
             return fitModel<MapMat, MapMat>(
                     xmap, is_sparse_x, y, extmap, fixed, weights_user,
-                    intr, stnd, penalty_type, cmult, quantiles, num_penalty,
+                    intr, stnd, penalty_type, cmult, quantiles, gamma, num_penalty,
                     penalty_ratio, penalty_user, penalty_user_ext, lower_cl,
                     upper_cl, family, thresh, maxit, ne, nx
                 );
@@ -216,7 +218,7 @@ Rcpp::List fitModelRcpp(SEXP x,
         if (is_sparse_ext) {
             return fitModel<MapMat, MapSpMat>(
                     xmap, is_sparse_x, y, Rcpp::as<MapSpMat>(ext), fixed, weights_user,
-                    intr, stnd, penalty_type, cmult, quantiles, num_penalty,
+                    intr, stnd, penalty_type, cmult, quantiles, gamma, num_penalty,
                     penalty_ratio, penalty_user, penalty_user_ext, lower_cl,
                     upper_cl, family, thresh, maxit, ne, nx
             );
@@ -226,7 +228,7 @@ Rcpp::List fitModelRcpp(SEXP x,
             MapMat extmap((const double *) &ext_mat[0], ext_mat.rows(), ext_mat.cols());
             return fitModel<MapMat, MapMat>(
                     xmap, is_sparse_x, y, extmap, fixed, weights_user, intr, stnd,
-                    penalty_type, cmult, quantiles, num_penalty,
+                    penalty_type, cmult, quantiles, gamma, num_penalty,
                     penalty_ratio, penalty_user, penalty_user_ext, lower_cl,
                     upper_cl, family, thresh, maxit, ne, nx
             );
@@ -237,7 +239,7 @@ Rcpp::List fitModelRcpp(SEXP x,
             return fitModel<MapSpMat, MapSpMat>(
                     Rcpp::as<MapSpMat>(x), is_sparse_x, y, Rcpp::as<MapSpMat>(ext),
                     fixed, weights_user, intr, stnd, penalty_type, cmult,
-                    quantiles, num_penalty, penalty_ratio, penalty_user,
+                    quantiles, gamma, num_penalty, penalty_ratio, penalty_user,
                     penalty_user_ext, lower_cl, upper_cl, family, thresh,
                     maxit, ne, nx
             );
@@ -246,7 +248,7 @@ Rcpp::List fitModelRcpp(SEXP x,
             MapMat extmap((const double *) &ext_mat[0], ext_mat.rows(), ext_mat.cols());
             return fitModel<MapSpMat, MapMat>(
                     Rcpp::as<MapSpMat>(x), is_sparse_x, y, extmap, fixed, weights_user,
-                    intr, stnd, penalty_type, cmult, quantiles, num_penalty,
+                    intr, stnd, penalty_type, cmult, quantiles, gamma, num_penalty,
                     penalty_ratio, penalty_user, penalty_user_ext, lower_cl,
                     upper_cl, family, thresh, maxit, ne, nx
             );

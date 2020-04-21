@@ -73,7 +73,7 @@ define_penalty <- function(penalty_type = 1,
     penalty_obj <- list(
         penalty_type = out$penalty_type,
         quantile = out$quantile,
-        #gamma = out$gamma, #Do not use yet.
+        gamma = out$gamma, #Do not use yet.
         num_penalty = num_penalty,
         penalty_ratio = penalty_ratio,
         user_penalty = user_penalty,

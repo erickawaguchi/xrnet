@@ -28,7 +28,7 @@ protected:
     MapVec penalty_type;
     MapVec cmult;
     MapVec quantiles;
-    //const VecXd quantiles;
+    MapVec gamma;
     MapVec ucl;
     MapVec lcl;
     const int ne;
@@ -70,8 +70,8 @@ public:
                 bool intercept_,
                 const double * penalty_type_,
                 const double * cmult_,
-                //VecXd quantiles_,
                 const double * quantiles_,
+                const double * gamma_,
                 const double * ucl_,
                 const double * lcl_,
                 int ne_,
@@ -90,6 +90,7 @@ public:
     cmult(cmult_, nv_total),
     //quantiles(quantiles_),
     quantiles(quantiles_, nv_total),
+    gamma(gamma_, nv_total),
     ucl(ucl_, nv_total),
     lcl(lcl_, nv_total),
     ne(ne_),
@@ -131,8 +132,8 @@ public:
                 bool intercept_,
                 const double * penalty_type_,
                 const double * cmult_,
-                //VecXd quantiles_,
                 const double * quantiles_,
+                const double * gammas_,
                 const double * ucl_,
                 const double * lcl_,
                 int ne_,
@@ -149,8 +150,8 @@ public:
         XZ(XZ_.data(), n, XZ_.cols()),
         penalty_type(penalty_type_, nv_total),
         cmult(cmult_, nv_total),
-        //quantiles(quantiles_),
         quantiles(quantiles_, nv_total),
+        gamma(gammas_, nv_total),
         ucl(ucl_, nv_total),
         lcl(lcl_, nv_total),
         ne(ne_),
