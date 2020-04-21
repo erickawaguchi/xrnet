@@ -39,7 +39,13 @@ penalty_mapper <- function(penalty_type = 1,
                            quantile = 0.5,
                            gamma = 0.0) {
     # Checks:
+    if (quantile < 0 | quantile > 1) {
+        stop("quantile must be between 0 and 1")
+    }
     if (is.numeric(penalty_type)) {
+        if (length(penalty_type) > 1) {
+            stop("penalty_type must be of length 1")
+        }
         if (penalty_type < 0 || penalty_type > 1) {
             stop("If penalty_type is numeric, it must be between 0 and 1")
         }

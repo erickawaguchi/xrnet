@@ -106,11 +106,11 @@ test_that("throw error when max iterations non-positive or not an integer", {
 
 ######################### initialize_penalty() errors #########################
 
-test_that("throw error when length of penalty_type != ncol(x)", {
+test_that("throw error when penalty_type is not a scalar", {
     x <- matrix(runif(20), ncol = 5)
     y <- 1:4
-    p <- define_penalty(penalty_type = rep(1, 4))
-    expect_error(xrnet(x, y, family = "gaussian", penalty_main = p))
+    expect_error(p <- define_penalty(penalty_type = rep(1, 4)))
+    #expect_error(xrnet(x, y, family = "gaussian", penalty_main = p))
 })
 
 test_that("throw error when num_penalty < 3", {
@@ -127,12 +127,12 @@ test_that("throw error when length of custom_multiplier != ncol(x)", {
     expect_error(xrnet(x, y, family = "gaussian", penalty_main = p))
 })
 
-test_that("throw error when length of penalty_type_ext != ncol(external)", {
+test_that("throw error when penalty_type_ext is not a scalar", {
     x <- matrix(runif(20), ncol = 5)
     y <- 1:4
     external <- matrix(runif(20), nrow = 5)
-    p <- define_penalty(penalty_type = rep(0, 2))
-    expect_error(xrnet(x, y, external, family = "gaussian", penalty_external = p))
+    expect_error(p <- define_penalty(penalty_type = rep(0, 2)))
+    #expect_error(xrnet(x, y, external, family = "gaussian", penalty_external = p))
 })
 
 test_that("throw error when num_penalty_ext < 3", {
