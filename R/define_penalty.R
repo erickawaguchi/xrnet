@@ -39,7 +39,7 @@
 define_penalty <- function(penalty_type = 1,
                            quantile = 0.5,
                            num_penalty = 20,
-                           gamma = 0.0,
+                           gamma = switch(penalty_type, scad = 3.7, 3),
                            penalty_ratio = NULL,
                            user_penalty = NULL,
                            custom_multiplier = NULL) {

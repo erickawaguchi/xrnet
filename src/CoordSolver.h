@@ -310,7 +310,7 @@ public:
                     } else if (std::abs(grad) <= gamm * lambda) {
                         betas[idx] = std::max(lcl[idx],
                                               std::min(ucl[idx],
-                                                       (gamm - 1) / (gamm - 2) * s * (std::abs(grad) - gamm * lambda / (gamm - 1))  / (xv[idx])));
+                                                        s * (std::abs(grad) - gamm * lambda / (gamm - 1))  / (xv[idx] * (1 - 1 / (gamm - 1))) ));
                     } else {
                         betas[idx] = std::max(lcl[idx],
                                               std::min(ucl[idx],
@@ -325,7 +325,7 @@ public:
                     } else if (std::abs(grad) <= gamm * lambda) {
                         betas[idx] = std::max(lcl[idx],
                                               std::min(ucl[idx],
-                                                      (gamm / (gamm - 1)) *  s * (std::abs(grad) - lambda)  / xv[idx]));
+                                                       s * (std::abs(grad) - lambda)  / (xv[idx] * (1 - 1 / gamm)) ));
                     } else {
                         betas[idx] = std::max(lcl[idx],
                                               std::min(ucl[idx],
@@ -399,7 +399,7 @@ public:
                     } else if (std::abs(grad) <= gamm * lambda) {
                         betas[idx] = std::max(lcl[idx],
                                               std::min(ucl[idx],
-                                                       (gamm - 1) / (gamm - 2) * s * (std::abs(grad) - gamm * lambda / (gamm - 1))  / (xv[idx])));
+                                                       s * (std::abs(grad) - gamm * lambda / (gamm - 1))  / (xv[idx] * (1 - 1 / (gamm - 1))) ));
                     } else {
                         betas[idx] = std::max(lcl[idx],
                                               std::min(ucl[idx],
@@ -414,7 +414,7 @@ public:
                 } else if (std::abs(grad) <= gamm * lambda) {
                     betas[idx] = std::max(lcl[idx],
                                           std::min(ucl[idx],
-                                                   (gamm / (gamm - 1)) *  s * (std::abs(grad) - lambda)  / xv[idx]));
+                                                   s * (std::abs(grad) - lambda)  / (xv[idx] * (1 - 1 / gamm)) ));
                 } else {
                     betas[idx] = std::max(lcl[idx],
                                           std::min(ucl[idx],

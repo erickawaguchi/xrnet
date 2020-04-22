@@ -68,10 +68,20 @@ penalty_mapper <- function(penalty_type = 1,
             quantile     = quantile
             penalty_type = 2 # Q1 regularizer
         } else if (penalty_type == "scad") {
-            gamma        = 3.7
+            if (gamma < 2) {
+                warning("For penalty_type = 'scad', gamma parameter must be > 2. Set to 3.7")
+                gamma <- 3.7
+            } else {
+                gamma = gamma
+            }
             penalty_type = 3 # SCAD regularizer
         } else if (penalty_type == "mcp") {
-            gamma        = 3.0
+            if (gamma < 2) {
+                warning("For penalty_type = 'mcp', gamma parameter must be > 1. Set to 3")
+                gamma <- 3
+            } else {
+                gamma = gamma
+            }
             penalty_type = 4 # MCP regularizer
         }
     }
