@@ -288,7 +288,7 @@ public:
                     // End Elastic Net
                 } else if (penalty_type[idx] == 2) {
                     // Q1 regularization
-                    grad += lambda * (2 * quant - 1);
+                    grad -= lambda * (2 * quant - 1);
                     double grad_thresh = std::abs(grad) - lambda;
                     if (grad_thresh <= 0.0) {
                         betas[idx] = 0.0;
@@ -377,7 +377,7 @@ public:
                     // End Elastic Net
                 } else if (penalty_type[idx] == 2) {
                     // Q1 regularization
-                    grad += lambda * (2 * quant - 1);
+                    grad -= lambda * (2 * quant - 1);
                     double grad_thresh = std::abs(grad) - lambda;
                     if (grad_thresh <= 0.0) {
                         betas[idx] = 0.0;
