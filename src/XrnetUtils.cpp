@@ -31,7 +31,10 @@ void compute_penalty(Eigen::Ref<Eigen::VectorXd> path,
         // Set penalties based on penalty value
         if (penalty_type == 1) {
             path[1] = alf * (max_penalty / std::max(quantile, maxInflationFactor));
-        } else if (penalty_type > 1) {
+        } else if (penalty_type == 2) {
+            path[1] = alf * std::max(max_penalty / (2 * quantile), max_penalty / (2 * (1 - quantile)));
+            //path[1] = alf * max_penalty / (1 + std::fabs(2 * quantile - 1));
+        } else {
             path[1] = alf * max_penalty;
         }
         // End penalty check
