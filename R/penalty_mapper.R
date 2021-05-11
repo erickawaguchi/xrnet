@@ -51,6 +51,7 @@ penalty_mapper <- function(penalty_type = 1,
         }
         quantile     = penalty_type
         penalty_type = 1 # Elastic net regularizer
+        gamma = gamma
     } else if (is.character(penalty_type)) {
         if(!(penalty_type %in% c("ridge", "lasso", "enet", "q1", "scad", "mcp"))) {
             stop ("If penalty_type is string, it must be one of 'ridge, lasso, enet, q1, scad, mcp'.")

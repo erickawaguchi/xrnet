@@ -636,7 +636,7 @@ public:
                 } else if (penalty_type[idx] == 2) {
                     if (std::fabs(gradient[idx] -  lambda * (2 * quantiles[1]  - 1)) > lambda) {
                         strong_set[idx] = true;
-                        xv[idx] = std::pow(xs[idx], 2) * (XZ.col(k).cwiseProduct(X.col(k)) - 2 * xm[idx] * XZ.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
+                        xv[idx] = std::pow(xs[idx], 2) * (XZ.col(k).cwiseProduct(XZ.col(k)) - 2 * xm[idx] * XZ.col(k) + std::pow(xm[idx], 2) * Eigen::VectorXd::Ones(n)).adjoint() * wgts;
                         ++num_violations;
                     }
                 } else if (penalty_type[idx] == 3 || penalty_type[idx] == 4) {
